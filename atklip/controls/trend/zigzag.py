@@ -228,7 +228,11 @@ from atklip.controls.ma_type import PD_MAType
 from atklip.controls.ohlcv import   OHLCV
 from atklip.controls.candle import JAPAN_CANDLE,HEIKINASHI,SMOOTH_CANDLE,N_SMOOTH_CANDLE
 from atklip.appmanager import CandleWorker
-
+from atklip.app_api_socket import socket_url
+import asyncio
+import json
+import time
+import websockets
 
 
 class OLD_ZIGZAG(QObject):
@@ -574,6 +578,8 @@ class ZIGZAG(QObject):
         self.is_genering = True
         self.list_zizgzag:list = []
         
+        self.websocket = asyncio.run(self.connect_to_websocket())
+        
         self.name = f"ZIGZAG {self.legs} {self.deviation}"
 
         self.df = pd.DataFrame([])
@@ -581,7 +587,25 @@ class ZIGZAG(QObject):
         self.x_data,self.y_data  = np.array([]),np.array([])
 
         self.connect_signals()
-        
+    
+    async def connect_to_websocket(self):
+        websocket = await websockets.connect(socket_url)
+        return websocket
+    
+    def api_caculate(self,list_zizgzag, candles: List[OHLCV],process:str=""):
+        data = {
+            "ta_name": "zigzag",
+            "list_zizgzag": list_zizgzag,
+            "candles":candles,
+            "process":process
+        }
+        data = json.dumps(data)
+        print(data)
+        asyncio.run(self.websocket.send(data))
+        # Nhận phản hồi từ server
+        # response = asyncio.run(self.websocket.recv()) 
+        # print(f"Received: {response}")
+    
     def disconnect_signals(self):
         try:
             self._candles.sig_reset_all.disconnect(self.started_worker)
@@ -663,8 +687,9 @@ class ZIGZAG(QObject):
     
     def started_worker(self):
         self.worker = None
-        self.worker = CandleWorker(self.fisrt_gen_data)
-        self.worker.start()
+        self.fisrt_gen_data()
+        # self.worker = CandleWorker(self.fisrt_gen_data)
+        # self.worker.start()
     
     def paire_data(self,list_zizgzag:list):
         if len(list_zizgzag) == 2:
@@ -702,22 +727,26 @@ class ZIGZAG(QObject):
         self.is_genering = True
         self.df = pd.DataFrame([])
         
-        self.x_data,self.y_data = self.caculate([],self._candles.candles)
+        # self.x_data,self.y_data = self.caculate([],self._candles.candles)
+        
+        self.x_data,self.y_data = self.api_caculate([],self._candles.df.to_json())
 
-        self.is_genering = False
-        if self.first_gen == False:
-            self.first_gen = True
-            self.is_genering = False
-        self.sig_reset_all.emit()
+        print(self.x_data,self.y_data)
+        
+        # self.is_genering = False
+        # if self.first_gen == False:
+        #     self.first_gen = True
+        #     self.is_genering = False
+        # self.sig_reset_all.emit()
     
     def add_historic(self,n:int):
         self.is_genering = True
-        self.x_data,self.y_data = self.caculate(self.list_zizgzag,self._candles.candles,"load")
-        self.is_genering = False
-        if self.first_gen == False:
-            self.first_gen = True
-            self.is_genering = False
-        self.sig_add_historic.emit()
+        # self.x_data,self.y_data = self.caculate(self.list_zizgzag,self._candles.candles,"load")
+        # self.is_genering = False
+        # if self.first_gen == False:
+        #     self.first_gen = True
+        #     self.is_genering = False
+        # self.sig_add_historic.emit()
     
     def add(self,new_candles:List[OHLCV]):
         new_candle:OHLCV = new_candles[-1]
@@ -729,5 +758,5 @@ class ZIGZAG(QObject):
         new_candle:OHLCV = new_candles[-1]
         if (self.first_gen == True) and (self.is_genering == False):
             self.x_data,self.y_data = self.caculate(self.list_zizgzag,self._candles.candles,"update")
-            self.sig_update_candle.emit()
+            # self.sig_update_candle.emit()
 
