@@ -23,9 +23,8 @@ class JAPAN_CANDLE(QObject):
     signal_delete = Signal()
     sig_update_source = Signal()
     
-    def __init__(self,chart) -> None:
+    def __init__(self) -> None:
         super().__init__(parent=None)
-        self.chart = chart
         self.first_gen = False
         self._source_name = "JAPAN_CANDLE"
         self.signal_delete.connect(self.deleteLater)
@@ -128,58 +127,58 @@ class JAPAN_CANDLE(QObject):
     #@lru_cache(maxsize=128)
     def get_index_data(self,start:int=0,stop:int=0):
         if start == 0 and stop == 0:
-            all_index = self.df["index"].to_numpy()
-            all_open = self.df["open"].to_numpy()
-            all_high = self.df["high"].to_numpy()
-            all_low = self.df["low"].to_numpy()
-            all_close = self.df["close"].to_numpy()
+            all_index = self.df["index"].to_list()
+            all_open = self.df["open"].to_list()
+            all_high = self.df["high"].to_list()
+            all_low = self.df["low"].to_list()
+            all_close = self.df["close"].to_list()
         elif start == 0 and stop != 0:
-            all_index = self.df["index"].iloc[:stop].to_numpy()
-            all_open = self.df["open"].iloc[:stop].to_numpy()
-            all_high = self.df["high"].iloc[:stop].to_numpy()
-            all_low = self.df["low"].iloc[:stop].to_numpy()
-            all_close = self.df["close"].iloc[:stop].to_numpy()
+            all_index = self.df["index"].iloc[:stop].to_list()
+            all_open = self.df["open"].iloc[:stop].to_list()
+            all_high = self.df["high"].iloc[:stop].to_list()
+            all_low = self.df["low"].iloc[:stop].to_list()
+            all_close = self.df["close"].iloc[:stop].to_list()
             
         elif start != 0 and stop == 0:
-            all_index = self.df["index"].iloc[start:].to_numpy()
-            all_open = self.df["open"].iloc[start:].to_numpy()
-            all_high = self.df["high"].iloc[start:].to_numpy()
-            all_low = self.df["low"].iloc[start:].to_numpy()
-            all_close = self.df["close"].iloc[start:].to_numpy()
+            all_index = self.df["index"].iloc[start:].to_list()
+            all_open = self.df["open"].iloc[start:].to_list()
+            all_high = self.df["high"].iloc[start:].to_list()
+            all_low = self.df["low"].iloc[start:].to_list()
+            all_close = self.df["close"].iloc[start:].to_list()
         else:
-            all_index = self.df["index"].iloc[start:stop].to_numpy()
-            all_open = self.df["open"].iloc[start:stop].to_numpy()
-            all_high = self.df["high"].iloc[start:stop].to_numpy()
-            all_low = self.df["low"].iloc[start:stop].to_numpy()
-            all_close = self.df["close"].iloc[start:stop].to_numpy()
+            all_index = self.df["index"].iloc[start:stop].to_list()
+            all_open = self.df["open"].iloc[start:stop].to_list()
+            all_high = self.df["high"].iloc[start:stop].to_list()
+            all_low = self.df["low"].iloc[start:stop].to_list()
+            all_close = self.df["close"].iloc[start:stop].to_list()
         
-        return all_index,[all_open,all_high,all_low,all_close]
+        return {"index":all_index,"data":[all_open,all_high,all_low,all_close]}
     
     def get_index_volumes(self,start:int=0,stop:int=0):
         if start == 0 and stop == 0:
-            all_index = self.df["index"].to_numpy()
-            all_open = self.df["open"].to_numpy()            
-            all_close = self.df["close"].to_numpy()
-            all_volume = self.df["volume"].to_numpy()
+            all_index = self.df["index"].to_list()
+            all_open = self.df["open"].to_list()            
+            all_close = self.df["close"].to_list()
+            all_volume = self.df["volume"].to_list()
         elif start == 0 and stop != 0:
-            all_index = self.df["index"].iloc[:stop].to_numpy()
-            all_open = self.df["open"].iloc[:stop].to_numpy()
-            all_volume = self.df["volume"].iloc[:stop].to_numpy()
-            all_close = self.df["close"].iloc[:stop].to_numpy()
+            all_index = self.df["index"].iloc[:stop].to_list()
+            all_open = self.df["open"].iloc[:stop].to_list()
+            all_volume = self.df["volume"].iloc[:stop].to_list()
+            all_close = self.df["close"].iloc[:stop].to_list()
             
         elif start != 0 and stop == 0:
-            all_index = self.df["index"].iloc[start:].to_numpy()
-            all_open = self.df["open"].iloc[start:].to_numpy()
-            all_volume = self.df["volume"].iloc[start:].to_numpy()
-            all_close = self.df["close"].iloc[start:].to_numpy()
+            all_index = self.df["index"].iloc[start:].to_list()
+            all_open = self.df["open"].iloc[start:].to_list()
+            all_volume = self.df["volume"].iloc[start:].to_list()
+            all_close = self.df["close"].iloc[start:].to_list()
         else:
-            all_index = self.df["index"].iloc[start:stop].to_numpy()
-            all_open = self.df["open"].iloc[start:stop].to_numpy()
-            all_volume = self.df["volume"].iloc[start:stop].to_numpy()
-            all_close = self.df["close"].iloc[start:stop].to_numpy()
-        
-        return all_index,[all_open,all_close,all_volume]
-    
+            all_index = self.df["index"].iloc[start:stop].to_list()
+            all_open = self.df["open"].iloc[start:stop].to_list()
+            all_volume = self.df["volume"].iloc[start:stop].to_list()
+            all_close = self.df["close"].iloc[start:stop].to_list()
+        return {"index":all_index,"data":[all_open,all_close,all_volume]}
+    def get_last_candle(self):
+        return self.df.iloc[-1].to_dict()
     #@lru_cache(maxsize=128)
     def get_list_index_data(self,start:int=0,stop:int=0):
         all_index = self.get_indexs(start,stop)
@@ -242,12 +241,6 @@ class JAPAN_CANDLE(QObject):
         all_index_np = np.array(all_index)
         all_data_np = np.array(all_data)
         return all_index_np,all_data_np
-
-    
-    # def fisrt_gen_data(self):
-    #     worker = None
-    #     worker = CandleWorker(self.stard_gen_data)
-    #     worker.start()
     
     def fisrt_gen_data(self,ohlcv,_precision):
         self.first_gen = False
@@ -344,7 +337,6 @@ class JAPAN_CANDLE(QObject):
             self.dict_index_ohlcv[_new_candle.index] = _new_candle
             self.dict_time_ohlcv[_new_candle.time] = _new_candle
 
-
     def update(self,new_candles:List[OHLCV]):
         new_candle:OHLCV = new_candles[-1]
         if self.first_gen:
@@ -354,14 +346,14 @@ class JAPAN_CANDLE(QObject):
                 self.candles.append(new_candle)
                 self.dict_index_ohlcv[new_candle.index] = new_candle
                 self.dict_time_ohlcv[new_candle.time] = new_candle
-                return False
+                return None
             last_candle = self.candles[-1]
             _time = last_candle.time
             if _time == new_candle.time:
                 if new_candle.close != last_candle.close or\
-                new_candle.high != last_candle.high or\
-                new_candle.low != last_candle.low or\
-                new_candle.open != last_candle.open:
+                                        new_candle.high != last_candle.high or\
+                                        new_candle.low != last_candle.low or\
+                                        new_candle.open != last_candle.open:
                     last_candle.open = new_candle.open
                     last_candle.high = new_candle.high
                     last_candle.low = new_candle.low
@@ -388,7 +380,8 @@ class JAPAN_CANDLE(QObject):
                                         last_candle.index
                                         ]
                     self.sig_update_candle.emit(self.candles[-2:])
-                    #QCoreApplication.processEvents()
+                    return False
+                return None
             else:
                 pre_candle:OHLCV = new_candles[-2]
                 
@@ -411,10 +404,7 @@ class JAPAN_CANDLE(QObject):
                 
                 new_row = pd.DataFrame([data.__dict__ for data in self.candles[-1:]])
                 self.df = pd.concat([self.df, new_row], ignore_index=True)
-
                 self.sig_add_candle.emit(self.candles[-2:])
-                #QCoreApplication.processEvents()
                 return True
-            return False
-        return False
+        return None
             

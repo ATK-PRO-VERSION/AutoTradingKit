@@ -83,7 +83,7 @@ class ViewPlotWidget(PlotWidget):
         self.is_living = False
         self._precision = 3
         
-        self.jp_candle = JAPAN_CANDLE(self)
+        self.jp_candle = JAPAN_CANDLE()
         
         self.heikinashi = HEIKINASHI(self._precision,self.jp_candle)
         

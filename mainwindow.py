@@ -50,7 +50,7 @@ def main():
 
 def create_server():
     _socket_process = Process(target=uvicorn.run, kwargs={
-                                                "app": "atklip.app_api_socket:app", 
+                                                "app": "atklip.app_api:app", 
                                                 "host": "localhost",
                                                 "port": 2022,
                                                 "ws_max_queue":1000,

@@ -12,12 +12,12 @@ import concurrent.futures
 
 def _create_server():
         thread = multiprocessing.Process(target=uvicorn.run, kwargs={
-                                                    "app": "atklip.app_api_socket:app", 
+                                                    "app": "atklip.app_api:app", 
                                                     "host": "localhost",
                                                     "port": 2022,
                                                     "ws_max_queue":1000,
                                                     "limit_max_requests":100000,
-                                                    "reload": False
+                                                    "reload": True
                                                     })
         thread.start()
         # thread.terminate()

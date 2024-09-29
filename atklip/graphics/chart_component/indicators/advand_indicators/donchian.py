@@ -74,7 +74,7 @@ class BasicDonchianChannels(PlotDataItem):
         
         self.picture: QPicture = QPicture()
         
-        self.INDICATOR  = DONCHIAN(self,self.has["inputs"]["source"], self.has["inputs"]["period_lower"],
+        self.Indicator  = DONCHIAN(self,self.has["inputs"]["source"], self.has["inputs"]["period_lower"],
                               self.has["inputs"]["period_upper"])
         
         self.chart.sig_update_source.connect(self.change_source,Qt.ConnectionType.AutoConnection)   
@@ -82,28 +82,28 @@ class BasicDonchianChannels(PlotDataItem):
         
     def disconnect_signals(self):
         try:
-            self.INDICATOR.sig_reset_all.disconnect(self.reset_threadpool_asyncworker)
-            self.INDICATOR.sig_update_candle.disconnect(self.setdata_worker)
-            self.INDICATOR.sig_add_candle.disconnect(self.setdata_worker)
-            self.INDICATOR.signal_delete.disconnect(self.replace_source)
+            self.Indicator.sig_reset_all.disconnect(self.reset_threadpool_asyncworker)
+            self.Indicator.sig_update_candle.disconnect(self.setdata_worker)
+            self.Indicator.sig_add_candle.disconnect(self.setdata_worker)
+            self.Indicator.signal_delete.disconnect(self.replace_source)
         except RuntimeError:
                     pass
     
     def connect_signals(self):
-        self.INDICATOR.sig_reset_all.connect(self.reset_threadpool_asyncworker,Qt.ConnectionType.AutoConnection)
+        self.Indicator.sig_reset_all.connect(self.reset_threadpool_asyncworker,Qt.ConnectionType.AutoConnection)
         
-        self.INDICATOR.sig_update_candle.connect(self.setdata_worker,Qt.ConnectionType.AutoConnection)
-        self.INDICATOR.sig_add_candle.connect(self.add_worker,Qt.ConnectionType.AutoConnection)
-        self.INDICATOR.sig_add_historic.connect(self.add_historic_worker,Qt.ConnectionType.AutoConnection)
+        self.Indicator.sig_update_candle.connect(self.setdata_worker,Qt.ConnectionType.AutoConnection)
+        self.Indicator.sig_add_candle.connect(self.add_worker,Qt.ConnectionType.AutoConnection)
+        self.Indicator.sig_add_historic.connect(self.add_historic_worker,Qt.ConnectionType.AutoConnection)
         
-        self.INDICATOR.signal_delete.connect(self.replace_source,Qt.ConnectionType.AutoConnection)
+        self.Indicator.signal_delete.connect(self.replace_source,Qt.ConnectionType.AutoConnection)
     
     def fisrt_gen_data(self):
         self.connect_signals()
-        self.INDICATOR.started_worker()
+        self.Indicator.started_worker()
        
     def delete(self):
-        self.INDICATOR.deleteLater()
+        self.Indicator.deleteLater()
         self.chart.sig_remove_item.emit(self)
     
     def reset_indicator(self):
@@ -113,7 +113,7 @@ class BasicDonchianChannels(PlotDataItem):
         self.worker.start()
 
     def regen_indicator(self,setdata):
-        xdata,lb,cb,ub= self.INDICATOR.get_data()
+        xdata,lb,cb,ub= self.Indicator.get_data()
         setdata.emit((xdata,lb,cb,ub))
         self.sig_change_yaxis_range.emit()
         self.has["name"] = f"DC {self.has["inputs"]["period_lower"]} {self.has["inputs"]["period_upper"]}"
@@ -159,7 +159,7 @@ class BasicDonchianChannels(PlotDataItem):
             if self.chart.sources[_source] != self.has["inputs"][_input]:
                 self.has["inputs"]["source"] = self.chart.sources[_source]
                 self.has["inputs"]["source_name"] = self.chart.sources[_source].source_name
-                self.INDICATOR.change_inputs(_input,self.has["inputs"]["source"])
+                self.Indicator.change_inputs(_input,self.has["inputs"]["source"])
         elif _source != self.has["inputs"][_input]:
                 self.has["inputs"][_input] = _source
                 is_update = True
@@ -167,7 +167,7 @@ class BasicDonchianChannels(PlotDataItem):
         if is_update:
             self.has["name"] = f"DC {self.has["inputs"]["period_lower"]} {self.has["inputs"]["period_upper"]}"
             self.sig_change_indicator_name.emit(self.has["name"])
-            self.INDICATOR.change_inputs(_input,_source)
+            self.Indicator.change_inputs(_input,_source)
     
     def update_styles(self, _input):
         _style = self.has["styles"][_input]
@@ -226,14 +226,14 @@ class BasicDonchianChannels(PlotDataItem):
         self.worker.start()    
     
     def load_historic_data(self,setdata):
-        xdata,lb,cb,ub= self.INDICATOR.get_data()
+        xdata,lb,cb,ub= self.Indicator.get_data()
         setdata.emit((xdata,lb,cb,ub))    
     def add_data(self,setdata):
-        xdata,lb,cb,ub= self.INDICATOR.get_data()
+        xdata,lb,cb,ub= self.Indicator.get_data()
         setdata.emit((xdata,lb,cb,ub))    
     
     def update_data(self,setdata):
-        xdata,lb,cb,ub= self.INDICATOR.get_data()
+        xdata,lb,cb,ub= self.Indicator.get_data()
         setdata.emit((xdata,lb,cb,ub))    
 
     def boundingRect(self) -> QRectF:

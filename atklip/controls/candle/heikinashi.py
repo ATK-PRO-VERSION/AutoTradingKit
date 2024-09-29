@@ -70,26 +70,6 @@ class HEIKINASHI(QObject):
         self.worker = CandleWorker(self.update,_candle)
         self.worker.start()
     
-    def get_candles_as_dataframe(self):
-        df = pd.DataFrame([data.__dict__ for data in self.candles])
-        # Đặt cột 'time' làm chỉ số (index) của DataFrame
-        df.set_index('time', inplace=True)
-        # Tùy chỉnh tên các cột
-        new_column_names = {
-            'open': 'Open',
-            'high': 'High',
-            'low': 'Low',
-            'close': 'Close',
-            'hl2': 'HL2',
-            'hlc3': 'HLC3',
-            'ohlc4': 'OHLC4',
-            'volume': 'Volume',
-            'index': 'Index'
-        }
-        df.rename(columns=new_column_names, inplace=True)
-        # Loại bỏ các cột 'hl2', 'hlc3', và 'ohlc4'
-        df.drop(columns=['HL2', 'HLC3', 'OHLC4'], inplace=True)
-        return df
     #@lru_cache(maxsize=128)
     def get_times(self,start:int=0,stop:int=0) -> List[str]:
         if start == 0 and stop == 0:
@@ -172,46 +152,60 @@ class HEIKINASHI(QObject):
     
     def get_index_data(self,start:int=0,stop:int=0):
         if start == 0 and stop == 0:
-            all_index = self.df["index"].to_numpy()
-            all_open = self.df["open"].to_numpy()
-            all_high = self.df["high"].to_numpy()
-            all_low = self.df["low"].to_numpy()
-            all_close = self.df["close"].to_numpy()
+            all_index = self.df["index"].to_list()
+            all_open = self.df["open"].to_list()
+            all_high = self.df["high"].to_list()
+            all_low = self.df["low"].to_list()
+            all_close = self.df["close"].to_list()
         elif start == 0 and stop != 0:
-            all_index = self.df["index"].iloc[:stop].to_numpy()
-            all_open = self.df["open"].iloc[:stop].to_numpy()
-            all_high = self.df["high"].iloc[:stop].to_numpy()
-            all_low = self.df["low"].iloc[:stop].to_numpy()
-            all_close = self.df["close"].iloc[:stop].to_numpy()
+            all_index = self.df["index"].iloc[:stop].to_list()
+            all_open = self.df["open"].iloc[:stop].to_list()
+            all_high = self.df["high"].iloc[:stop].to_list()
+            all_low = self.df["low"].iloc[:stop].to_list()
+            all_close = self.df["close"].iloc[:stop].to_list()
             
         elif start != 0 and stop == 0:
-            all_index = self.df["index"].iloc[start:].to_numpy()
-            all_open = self.df["open"].iloc[start:].to_numpy()
-            all_high = self.df["high"].iloc[start:].to_numpy()
-            all_low = self.df["low"].iloc[start:].to_numpy()
-            all_close = self.df["close"].iloc[start:].to_numpy()
+            all_index = self.df["index"].iloc[start:].to_list()
+            all_open = self.df["open"].iloc[start:].to_list()
+            all_high = self.df["high"].iloc[start:].to_list()
+            all_low = self.df["low"].iloc[start:].to_list()
+            all_close = self.df["close"].iloc[start:].to_list()
         else:
-            all_index = self.df["index"].iloc[start:stop].to_numpy()
-            all_open = self.df["open"].iloc[start:stop].to_numpy()
-            all_high = self.df["high"].iloc[start:stop].to_numpy()
-            all_low = self.df["low"].iloc[start:stop].to_numpy()
-            all_close = self.df["close"].iloc[start:stop].to_numpy()
+            all_index = self.df["index"].iloc[start:stop].to_list()
+            all_open = self.df["open"].iloc[start:stop].to_list()
+            all_high = self.df["high"].iloc[start:stop].to_list()
+            all_low = self.df["low"].iloc[start:stop].to_list()
+            all_close = self.df["close"].iloc[start:stop].to_list()
         
-        return all_index,[all_open,all_high,all_low,all_close]
+        return {"index":all_index,"data":[all_open,all_high,all_low,all_close]}
     
-    # def get_index_data(self,start:int=0,stop:int=0):
-    #     all_index = self.get_indexs(start,stop)
-    #     all_data = self.get_values(start,stop)
-    #     all_index_np = np.array(all_index)
-    #     all_data_np = np.array(all_data)
-    #     return all_index_np,all_data_np
-    #@lru_cache(maxsize=128)
     def get_index_volumes(self,start:int=0,stop:int=0):
-        all_index = self.get_indexs(start,stop)
-        all_data = self.get_volumes(start,stop)
-        all_index_np = np.array(all_index)
-        all_data_np = np.array(all_data)
-        return all_index_np,all_data_np
+        if start == 0 and stop == 0:
+            all_index = self.df["index"].to_list()
+            all_open = self.df["open"].to_list()            
+            all_close = self.df["close"].to_list()
+            all_volume = self.df["volume"].to_list()
+        elif start == 0 and stop != 0:
+            all_index = self.df["index"].iloc[:stop].to_list()
+            all_open = self.df["open"].iloc[:stop].to_list()
+            all_volume = self.df["volume"].iloc[:stop].to_list()
+            all_close = self.df["close"].iloc[:stop].to_list()
+            
+        elif start != 0 and stop == 0:
+            all_index = self.df["index"].iloc[start:].to_list()
+            all_open = self.df["open"].iloc[start:].to_list()
+            all_volume = self.df["volume"].iloc[start:].to_list()
+            all_close = self.df["close"].iloc[start:].to_list()
+        else:
+            all_index = self.df["index"].iloc[start:stop].to_list()
+            all_open = self.df["open"].iloc[start:stop].to_list()
+            all_volume = self.df["volume"].iloc[start:stop].to_list()
+            all_close = self.df["close"].iloc[start:stop].to_list()
+        return {"index":all_index,"data":[all_open,all_close,all_volume]}
+    
+    def get_last_candle(self):
+        return self.df.iloc[-1].to_dict()
+
     #@lru_cache(maxsize=128)
     def get_list_index_data(self,start:int=0,stop:int=0):
         all_index = self.get_indexs(start,stop)
@@ -312,12 +306,6 @@ class HEIKINASHI(QObject):
 
     def reset(self):
         self.candles = []
-    
-    
-    # def fisrt_gen_data(self):
-    #     worker = None
-    #     worker = CandleWorker(self.stard_gen_data)
-    #     worker.start()
     
     
     def fisrt_gen_data(self):

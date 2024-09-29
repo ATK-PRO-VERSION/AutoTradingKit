@@ -364,9 +364,7 @@ class Chart(ViewPlotWidget):
         _group_indicator = indicator_data[0][0]
         _indicator_type = indicator_data[0][1]
         mainwindow = indicator_data[1]
-        
         # print("view chart", _group_indicator,_indicator_type)
-        
         if _group_indicator == "Basic Indicator":
             indicator = BasicMA(self,indicator_type=_indicator_type,length=30,_type="close",pen="#ffaa00")
             panel = IndicatorPanel(mainwindow,self, indicator)
@@ -408,10 +406,6 @@ class Chart(ViewPlotWidget):
                 self.add_item(indicator)
                 indicator.fisrt_gen_data()
                 
-                
-                
-                
-
     def set_data_dataconnect(self):
         if self.list_candle_indicators == []:
             "load data when starting app"

@@ -1,135 +1,213 @@
-from typing import Tuple
-
+import time
+from typing import Tuple, List,TYPE_CHECKING
 import numpy as np
-from PySide6.QtCore import Signal, Qt, QObject
-from PySide6.QtGui import QColor
-from atklip.graphics.pyqtgraph import PlotDataItem
-from atklip.graphics.pyqtgraph import functions as fn
+from atklip.graphics.pyqtgraph import GraphicsObject, PlotDataItem
+from atklip.graphics.chart_component.base_items import PriceLine
+from PySide6.QtCore import Signal, QObject,Qt,QRectF
+from PySide6.QtGui import QColor,QPicture,QPainter
+from PySide6.QtWidgets import QGraphicsItem
 
+from atklip.controls import PD_MAType,IndicatorType,ZIGZAG
+
+from atklip.appmanager import FastWorker
 from atklip.app_utils import *
-
-class BasicZigzag(PlotDataItem):
-    """Zigzag plot"""
+if TYPE_CHECKING:
+    from atklip.graphics.chart_component.viewchart import Chart
+    from atklip.graphics.chart_component.sub_panel_indicator import ViewSubPanel
+    
+class BasicZIGZAG(PlotDataItem):
+    """RSI"""
     on_click = Signal(QObject)
+
+    last_pos = Signal(tuple)
 
     signal_visible = Signal(bool)
     signal_delete = Signal()
-    signal_change_color = Signal(str)
-    signal_change_width = Signal(int)
-    signal_change_type = Signal(str)
 
-    def __init__(self,pen, chart=None, indicator_name='',percent=2,pivot_leg=2,id = None,symbol='',interval='',clickable=True) -> None:
+    sig_change_yaxis_range = Signal()
+    
+    sig_change_indicator_name = Signal(str)
+
+    def __init__(self,chart,id = None,clickable=True) -> None:
         """Choose colors of candle"""
-        super().__init__(clickable=clickable)
-        self.chart = chart
-        self.opts.update({'pen':pen})
-        self.indicator_name = indicator_name
+        # GraphicsObject.__init__(self)
+        super().__init__()
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemUsesExtendedStyleOption,True)
+        self.chart:Chart = chart
+
+        self._precision = self.chart._precision
+        
+        self.has = {
+            "name": f"ZIGZAG 10 1",
+            "y_axis_show":False,
+            "inputs":{
+                    "source":self.chart.jp_candle,
+                    "source_name": self.chart.jp_candle.source_name,
+                    "indicator_type":IndicatorType.ZIGZAG,
+                    "legs":5,
+                    "deviation":0.5,
+                    "show":True},
+
+            "styles":{
+                    'pen_zz_line': "red",
+                    'width_zz_line': 1,
+                    'style_zz_line': Qt.PenStyle.SolidLine
+                    }
+                    }
+     
         self.id = id
-        self.percent = percent
-        self.pivot_leg = pivot_leg
-        self.symbol = symbol
-        self.interval = interval
+        
         self.on_click.connect(self.on_click_event)
-
-        self.chart.emit_data.connect(self.update_data)
-
         self.signal_visible.connect(self.setVisible)
         self.signal_delete.connect(self.delete)
-        self.signal_change_color.connect(self.change_color)
-        self.signal_change_width.connect(self.change_width)
-        self.signal_change_type.connect(self.change_type)
-
-        #self.dataconnect = DataConnector(win=self.chart, plot=self)
+        
+        self.setPen(color="red")
+        
+        
+        self.picture: QPicture = QPicture()
+        
+        self.worker = None
+        
+        
+        self.Indicator  = ZIGZAG(parent=self,
+                                _candles=self.has["inputs"]["source"], 
+                                legs =self.has["inputs"]["legs"],
+                                deviation= self.has["inputs"]["deviation"]
+                               )
+        
+        self.chart.sig_update_source.connect(self.change_source,Qt.ConnectionType.AutoConnection)   
+        self.signal_delete.connect(self.delete)
+    
+    
+    def disconnect_signals(self):
+        try:
+            self.Indicator.sig_reset_all.disconnect(self.reset_threadpool_asyncworker)
+            self.Indicator.sig_update_candle.disconnect(self.setdata_worker)
+            self.Indicator.sig_add_candle.disconnect(self.setdata_worker)
+            self.Indicator.signal_delete.disconnect(self.replace_source)
+        except RuntimeError:
+                    pass
+    
+    def connect_signals(self):
+        self.Indicator.sig_reset_all.connect(self.reset_threadpool_asyncworker,Qt.ConnectionType.AutoConnection)
+        self.Indicator.sig_update_candle.connect(self.setdata_worker,Qt.ConnectionType.AutoConnection)
+        self.Indicator.sig_add_candle.connect(self.setdata_worker,Qt.ConnectionType.AutoConnection)
+        self.Indicator.sig_add_historic.connect(self.add_historic_worker,Qt.ConnectionType.AutoConnection)
+        self.Indicator.signal_delete.connect(self.replace_source,Qt.ConnectionType.AutoConnection)
+    
+    def fisrt_gen_data(self):
+        self.connect_signals()
+        self.Indicator.started_worker()
+       
+    def delete(self):
+        self.Indicator.deleteLater()
+        self.chart.sig_remove_item.emit(self)
+    
+    def reset_indicator(self):
+        self.worker = None
+        self.worker = FastWorker(self.regen_indicator)
+        self.worker.signals.setdata.connect(self.set_Data,Qt.ConnectionType.QueuedConnection)
+        self.worker.start()
+    
+  
+    def replace_source(self):
+        self.update_inputs( "source",self.chart.jp_candle.source_name)
+        
+    def reset_threadpool_asyncworker(self):
+        self.reset_indicator()
+        
+    def change_source(self,source):   
+        if self.has["inputs"]["source_name"] == source.source_name:
+            self.update_inputs("source",source.source_name)
+    
+    def get_inputs(self):
+        inputs =  {"source":self.has["inputs"]["source"],
+                    "legs":self.has["inputs"]["legs"],
+                    "deviation":self.has["inputs"]["deviation"],}
+        return inputs
+    
+    def get_styles(self):
+        styles =  {"pen_zz_line":self.has["styles"]["pen_zz_line"],
+                    "width_zz_line":self.has["styles"]["width_zz_line"],
+                    "style_zz_line":self.has["styles"]["style_zz_line"],
+                   }
+        return styles
+    
+    
+    def update_inputs(self,_input,_source):
+        """"source":self.has["inputs"]["source"],
+                "ma_type":self.has["inputs"]["ma_type"],
+                "ma_period":self.has["inputs"]["ma_period"]"""
+        update = False
+        if _input == "source":
+            if self.chart.sources[_source] != self.has["inputs"][_input]:
+                self.has["inputs"]["source"] = self.chart.sources[_source]
+                self.has["inputs"]["source_name"] = self.chart.sources[_source].source_name
+                self.Indicator.change_inputs(_input,self.has["inputs"]["source"])
+        elif _source != self.has["inputs"][_input]:
+            if _input == "legs":
+                if _source < 2:
+                    print("ZigZag leg must be gratter than 2")
+                    return
+            self.has["inputs"][_input] = _source
+            update = True
+        if update:
+            self.has["name"] = f"ZIGZAG {self.has["inputs"]["legs"]} {self.has["inputs"]["deviation"]}"
+            self.sig_change_indicator_name.emit(self.has["name"])
+            self.Indicator.change_inputs(_input,_source)
+    
+    def update_styles(self, _input):
+        _style = self.has["styles"][_input]
+        if _input == "pen_zz_line" or _input == "width_zz_line" or _input == "style_zz_line":
+            self.setPen(color=self.has["styles"]["pen_zz_line"], width=self.has["styles"]["width_zz_line"],style=self.has["styles"]["style_zz_line"])
+        
 
     def setVisible(self, visible):
         if visible:
             self.show()
         else:
             self.hide()
-        self.update()
-    
-    def delete(self):
-        self.deleteLater()
 
-    
-    def change_type(self, type_):
-        if type_ == "SolidLine":
-            self.currentPen.setStyle(Qt.PenStyle.SolidLine)
-        elif type_ == "DashLine":
-            self.currentPen.setStyle(Qt.PenStyle.DashLine)
-        elif type_ == "DotLine":
-            self.currentPen.setStyle(Qt.PenStyle.DotLine)
-        self.setPen(self.currentPen)
-        self.update()
-
-    def change_width(self, width):
-        self.currentPen.setWidth(width)
-        self.setPen(self.currentPen)
-        self.update()
-
-    def change_color(self, color):
-        r, g, b = color[0], color[1], color[2]
-        color = QColor(r, g, b)
-        self.currentPen.setColor(color)
-        self.setPen(self.currentPen)
-        self.update()
-
-    async def update_data(self, data):
-        candle_timedata = data[0]
-        candle_data = data[1]
-        list_zizgzag = [[candle_timedata[0],candle_data[0][2],'low'],[candle_timedata[0],candle_data[0][3],'high']]
-        for i in range(len(candle_timedata)):
-            if percent_caculator(list_zizgzag[0][1],list_zizgzag[1][1]) < self.percent:
-                    if list_zizgzag[0][2] == 'low':
-                        if list_zizgzag[0][1] > candle_data[i][2]:
-                            list_zizgzag.pop(0)
-                            list_zizgzag.append([candle_timedata[i],candle_data[i][2],'low'])
-                        elif list_zizgzag[1][1] < candle_data[i][3]:
-                            list_zizgzag.pop()
-                            list_zizgzag.append([candle_timedata[i],candle_data[i][3],'high'])
-                    elif list_zizgzag[0][2] == 'high':
-                        if list_zizgzag[0][1] < candle_data[i][3]:
-                            list_zizgzag.pop(0)
-                            list_zizgzag.append([candle_timedata[i],candle_data[i][3],'high'])
-                        elif list_zizgzag[1][1] > candle_data[i][2]:
-                            list_zizgzag.pop()
-                            list_zizgzag.append([candle_timedata[i],candle_data[i][2],'low'])
-            else:
-                if list_zizgzag[-1][2] == 'low':
-                    if percent_caculator(list_zizgzag[-1][1],candle_data[i][3]) > self.percent:
-                        list_zizgzag.append([candle_timedata[i],candle_data[i][3],'high'])
-                    elif list_zizgzag[-1][1] > candle_data[i][2]:
-                        list_zizgzag.pop()
-                        list_zizgzag.append([candle_timedata[i],candle_data[i][2],'low'])
-                elif list_zizgzag[-1][2] == 'high':
-                    if percent_caculator(list_zizgzag[-1][1],candle_data[i][2]) > self.percent:
-                        list_zizgzag.append([candle_timedata[i],candle_data[i][2],'low'])
-                    elif list_zizgzag[-1][1] < candle_data[i][3]:
-                        list_zizgzag.pop()
-                        list_zizgzag.append([candle_timedata[i],candle_data[i][3],'high'])
+    def setdata_worker(self):
+        self.worker = None
+        self.worker = FastWorker(self.update_data)
+        self.worker.signals.setdata.connect(self.set_Data,Qt.ConnectionType.QueuedConnection)
+        self.worker.start()    
+    def add_historic_worker(self):
+        self.worker = None
+        self.worker = FastWorker(self.load_historic_data)
+        self.worker.signals.setdata.connect(self.set_Data,Qt.ConnectionType.QueuedConnection)
+        self.worker.start()
+    def regen_indicator(self,setdata):
+        xdata, zz_value = self.Indicator.get_data()
+        setdata.emit((xdata,zz_value))   
+        self.has["name"] = f"ZIGZAG {self.has["inputs"]["legs"]} {self.has["inputs"]["deviation"]}"
+        self.sig_change_indicator_name.emit(self.has["name"])
+        self.sig_change_yaxis_range.emit()
+    def load_historic_data(self,setdata):
+        xdata, zz_value = self.Indicator.get_data()
+        setdata.emit((xdata,zz_value))
+    def set_Data(self,data):
+        xData = data[0]
+        lb = data[1]
+        try:
+            self.setData(xData,lb)
+        except Exception as e:
+            pass
         
-        if len(list_zizgzag) == 2:
-            if percent_caculator(list_zizgzag[0][1],list_zizgzag[1][1]) >= self.percent:
-                x_data = [x[0] for x in list_zizgzag]
-                y_data = [x[1] for x in list_zizgzag]   
-            else:
-                x_data,y_data = [],[]
-        else:
-            x_data = [x[0] for x in list_zizgzag]
-            y_data = [x[1] for x in list_zizgzag]       
-        if x_data != [] and y_data != []: 
-            self.setData(x_data,y_data)
-        #self.indicator.setData(data)
-    def on_click_event(self):
-        print("zooo day__________________")
-        pass
+        # self.prepareGeometryChange()
+        # self.informViewBoundsChanged()
 
-    def mouseClickEvent(self, ev):
+    def update_data(self,setdata):
+        xdata, zz_value = self.Indicator.get_data()
+        setdata.emit((xdata,zz_value))
+        # self.last_pos.emit((self.has["inputs"]["indicator_type"],stc[-1]))
+        
+
+    def mousePressEvent(self, ev):
         if ev.button() == Qt.MouseButton.LeftButton:
             self.on_click.emit(self)
-
-        super().mouseClickEvent(ev)
-
+        super().mousePressEvent(ev)
 
     def setObjectName(self, name):
         self.indicator_name = name
@@ -137,37 +215,51 @@ class BasicZigzag(PlotDataItem):
     def objectName(self):
         return self.indicator_name
     
-    def setPercent(self, percent):
-        self.percent = percent
     
-    def getPercent(self):
-        return self.percent
+    def get_yaxis_param(self):
+        _value = None
+        try:
+            _time,_value = self.get_last_point()
+        except:
+            pass
+        if _value != None:
+            if self._precision != None:
+                _value = round(_value,self._precision)
+            else:
+                _value = round(_value,3)
+        return _value,"#363a45"
     
-    def setPivotLeg(self, pivot_leg):
-        self.pivot_leg = pivot_leg
+    
+    def get_xaxis_param(self):
+        return None,"#363a45"
 
-    def getPivotLeg(self):
-        return self.pivot_leg
+    # def paint(self, p:QPainter, *args):
+    #     self.picture.play(p)
+    
+    # def boundingRect(self) -> QRectF:
+    #     return self.stc_line.boundingRect()
+    
+    
+    def get_last_point(self):
+        _time = self.xData[-1]
+        _value = self.yData[-1]
+        return _time,_value
+    
+    def get_min_max(self):
+        _min = None
+        _max = None
+        try:
+            if len(self.yData) > 0:
+                _min, _max = np.nanmin(self.yData), np.nanmax(self.yData)
+                if _min == np.nan or _max == np.nan:
+                    return None, None
+                return _min,_max
+        except Exception as e:
+            pass
+        time.sleep(0.1)
+        self.get_min_max()
+        return _min,_max
 
-    def setPen(self, *args, **kargs):
-        """
-        Sets the pen used to draw lines between points.
-        The argument can be a :class:`QtGui.QPen` or any combination of arguments accepted by 
-        :func:`pyqtgraph.mkPen() <pyqtgraph.mkPen>`.
-        """
-        pen = fn.mkPen(*args, **kargs)
-        self.opts['pen'] = pen
-        self.currentPen = pen
-        #self.curve.setPen(pen)
-        #for c in self.curves:
-            #c.setPen(pen)
-        self.update()
-        self.updateItems(styleUpdate=True)
-
-    def data_bounds(self, ax=0, offset=0) -> Tuple:
-        x, y = self.getData()
-        if ax == 0:
-            sub_range = x[-offset:]
-        else:
-            sub_range = y[-offset:]
-        return np.nanmin(sub_range), np.nanmax(sub_range)
+    def on_click_event(self):
+        print("zooo day__________________")
+        pass

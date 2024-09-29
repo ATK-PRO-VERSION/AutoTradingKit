@@ -12,7 +12,7 @@ from PySide6.QtCore import (QRect, Signal, QObject)
 import asyncio
 import concurrent.futures
 
-from atklip.app_api_socket import app as api_app
+from atklip.app_api import app as api_app
 
 
 app = api_app

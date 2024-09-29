@@ -96,7 +96,7 @@ class BasicSTOCHRSI(GraphicsObject):
         
         self.sig_change_yaxis_range.connect(get_last_pos_worker, Qt.ConnectionType.AutoConnection)
         
-        self.INDICATOR  = STOCHRSI(parent=self,
+        self.Indicator  = STOCHRSI(parent=self,
                                 _candles=self.has["inputs"]["source"],
                                 source=  self.has["inputs"]["type"],
                                 rsi_period=self.has["inputs"]["rsi_period"],
@@ -111,26 +111,26 @@ class BasicSTOCHRSI(GraphicsObject):
     
     def disconnect_signals(self):
         try:
-            self.INDICATOR.sig_reset_all.disconnect(self.reset_threadpool_asyncworker)
-            self.INDICATOR.sig_update_candle.disconnect(self.setdata_worker)
-            self.INDICATOR.sig_add_candle.disconnect(self.setdata_worker)
-            self.INDICATOR.signal_delete.disconnect(self.replace_source)
+            self.Indicator.sig_reset_all.disconnect(self.reset_threadpool_asyncworker)
+            self.Indicator.sig_update_candle.disconnect(self.setdata_worker)
+            self.Indicator.sig_add_candle.disconnect(self.setdata_worker)
+            self.Indicator.signal_delete.disconnect(self.replace_source)
         except RuntimeError:
                     pass
     
     def connect_signals(self):
-        self.INDICATOR.sig_reset_all.connect(self.reset_threadpool_asyncworker,Qt.ConnectionType.AutoConnection)
-        self.INDICATOR.sig_update_candle.connect(self.setdata_worker,Qt.ConnectionType.AutoConnection)
-        self.INDICATOR.sig_add_candle.connect(self.setdata_worker,Qt.ConnectionType.AutoConnection)
-        self.INDICATOR.sig_add_historic.connect(self.add_historic_worker,Qt.ConnectionType.AutoConnection)
-        self.INDICATOR.signal_delete.connect(self.replace_source,Qt.ConnectionType.AutoConnection)
+        self.Indicator.sig_reset_all.connect(self.reset_threadpool_asyncworker,Qt.ConnectionType.AutoConnection)
+        self.Indicator.sig_update_candle.connect(self.setdata_worker,Qt.ConnectionType.AutoConnection)
+        self.Indicator.sig_add_candle.connect(self.setdata_worker,Qt.ConnectionType.AutoConnection)
+        self.Indicator.sig_add_historic.connect(self.add_historic_worker,Qt.ConnectionType.AutoConnection)
+        self.Indicator.signal_delete.connect(self.replace_source,Qt.ConnectionType.AutoConnection)
     
     def fisrt_gen_data(self):
         self.connect_signals()
-        self.INDICATOR.started_worker()
+        self.Indicator.started_worker()
        
     def delete(self):
-        self.INDICATOR.deleteLater()
+        self.Indicator.deleteLater()
         self.chart.sig_remove_item.emit(self)
     
     def reset_indicator(self):
@@ -141,7 +141,7 @@ class BasicSTOCHRSI(GraphicsObject):
     
 
     def regen_indicator(self,setdata):
-        xdata,stochrsi,signalma= self.INDICATOR.get_data()  
+        xdata,stochrsi,signalma= self.Indicator.get_data()  
         self.has["name"] = f"STOCHRSI {self.has["inputs"]["ma_type"].name} {self.has["inputs"]["period"]} {self.has["inputs"]["k_period"]} {self.has["inputs"]["d_period"]} {self.has["inputs"]["type"]}"
         self.sig_change_indicator_name.emit(self.has["name"])
         setdata.emit((xdata,stochrsi,signalma))
@@ -166,7 +166,7 @@ class BasicSTOCHRSI(GraphicsObject):
             if self.chart.sources[_source] != self.has["inputs"][_input]:
                 self.has["inputs"]["source"] = self.chart.sources[_source]
                 self.has["inputs"]["source_name"] = self.chart.sources[_source].source_name
-                self.INDICATOR.change_inputs(_input,self.has["inputs"]["source"])
+                self.Indicator.change_inputs(_input,self.has["inputs"]["source"])
         elif _input == "price_high":
             if _source != self.has["inputs"]["price_high"]:
                 self.has["inputs"]["price_high"] = _source
@@ -181,7 +181,7 @@ class BasicSTOCHRSI(GraphicsObject):
         if update:
             self.has["name"] = f"STOCHRSI {self.has["inputs"]["ma_type"].name} {self.has["inputs"]["period"]} {self.has["inputs"]["k_period"]} {self.has["inputs"]["d_period"]} {self.has["inputs"]["type"]}"
             self.sig_change_indicator_name.emit(self.has["name"])
-            self.INDICATOR.change_inputs(_input,_source)
+            self.Indicator.change_inputs(_input,_source)
 
     def setdata_worker(self):
         self.worker = None
@@ -196,11 +196,11 @@ class BasicSTOCHRSI(GraphicsObject):
         self.worker.start()
     
     def load_historic_data(self,setdata):
-        xdata,stochrsi,signalma = self.INDICATOR.get_data()
+        xdata,stochrsi,signalma = self.Indicator.get_data()
         setdata.emit((xdata,stochrsi,signalma))
 
     def update_data(self,setdata):
-        xdata,stochrsi,signalma = self.INDICATOR.get_data()
+        xdata,stochrsi,signalma = self.Indicator.get_data()
         setdata.emit((xdata,stochrsi,signalma))
         self.last_pos.emit((self.has["inputs"]["indicator_type"],signalma[-1]))
         self._panel.sig_update_y_axis.emit()

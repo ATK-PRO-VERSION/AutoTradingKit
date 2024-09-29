@@ -58,7 +58,7 @@ class BasicMA(PlotDataItem):
         self.is_reset = False
         # self.xData, self.yData = np.array([]),np.array([])
         
-        self.INDICATOR  = MA(self,self.has["inputs"]["source"], self.has["inputs"]["type"],
+        self.Indicator  = MA(self,self.has["inputs"]["source"], self.has["inputs"]["type"],
                               self.has["inputs"]["ma_type"],self.has["inputs"]["length"])
         
         self.chart.sig_update_source.connect(self.change_source,Qt.ConnectionType.AutoConnection)
@@ -67,28 +67,28 @@ class BasicMA(PlotDataItem):
         
     def disconnect_signals(self):
         try:
-            self.INDICATOR.sig_reset_all.disconnect(self.reset_threadpool_asyncworker)
-            self.INDICATOR.sig_update_candle.disconnect(self.setdata_worker)
-            self.INDICATOR.sig_add_candle.disconnect(self.setdata_worker)
-            self.INDICATOR.signal_delete.disconnect(self.replace_source)
+            self.Indicator.sig_reset_all.disconnect(self.reset_threadpool_asyncworker)
+            self.Indicator.sig_update_candle.disconnect(self.setdata_worker)
+            self.Indicator.sig_add_candle.disconnect(self.setdata_worker)
+            self.Indicator.signal_delete.disconnect(self.replace_source)
         except RuntimeError:
                     pass
     
     def connect_signals(self):
-        self.INDICATOR.sig_reset_all.connect(self.reset_threadpool_asyncworker,Qt.ConnectionType.AutoConnection)
+        self.Indicator.sig_reset_all.connect(self.reset_threadpool_asyncworker,Qt.ConnectionType.AutoConnection)
 
-        self.INDICATOR.sig_update_candle.connect(self.setdata_worker,Qt.ConnectionType.AutoConnection)
-        self.INDICATOR.sig_add_candle.connect(self.add_worker,Qt.ConnectionType.AutoConnection)
-        self.INDICATOR.sig_add_historic.connect(self.add_historic_worker,Qt.ConnectionType.AutoConnection)
+        self.Indicator.sig_update_candle.connect(self.setdata_worker,Qt.ConnectionType.AutoConnection)
+        self.Indicator.sig_add_candle.connect(self.add_worker,Qt.ConnectionType.AutoConnection)
+        self.Indicator.sig_add_historic.connect(self.add_historic_worker,Qt.ConnectionType.AutoConnection)
         
-        self.INDICATOR.signal_delete.connect(self.replace_source,Qt.ConnectionType.AutoConnection)
+        self.Indicator.signal_delete.connect(self.replace_source,Qt.ConnectionType.AutoConnection)
     
     def fisrt_gen_data(self):
         self.connect_signals()
-        self.INDICATOR.started_worker()
+        self.Indicator.started_worker()
        
     def delete(self):
-        self.INDICATOR.deleteLater()
+        self.Indicator.deleteLater()
         self.chart.sig_remove_item.emit(self)
     
     def reset_indicator(self):
@@ -98,7 +98,7 @@ class BasicMA(PlotDataItem):
         self.worker.start()
 
     def regen_indicator(self,setdata):
-        _index,_data = self.INDICATOR.get_data()
+        _index,_data = self.Indicator.get_data()
         setdata.emit((_index,_data))
         self.sig_change_yaxis_range.emit()
         self.has["name"] = f"{self.has["inputs"]["ma_type"].name} {self.has["inputs"]["length"]} {self.has["inputs"]["type"]}"
@@ -132,7 +132,7 @@ class BasicMA(PlotDataItem):
             if self.chart.sources[_source] != self.has["inputs"][_input]:
                 self.has["inputs"]["source"] = self.chart.sources[_source]
                 self.has["inputs"]["source_name"] = self.chart.sources[_source].source_name
-                self.INDICATOR.change_inputs(_input,self.has["inputs"]["source"])
+                self.Indicator.change_inputs(_input,self.has["inputs"]["source"])
         elif _input == "type":
             if _source != self.has["inputs"][_input]:
                 self.has["inputs"][_input] = _source
@@ -148,7 +148,7 @@ class BasicMA(PlotDataItem):
         if is_update:
             self.has["name"] = f"{self.has["inputs"]["ma_type"].name} {self.has["inputs"]["length"]} {self.has["inputs"]["type"]}"
             self.sig_change_indicator_name.emit(self.has["name"])
-            self.INDICATOR.change_inputs(_input,_source)
+            self.Indicator.change_inputs(_input,_source)
             
     def update_styles(self, _input):
         _style = self.has["styles"][_input]
@@ -179,7 +179,7 @@ class BasicMA(PlotDataItem):
         self.setData(xData, yData)
 
     def get_last_point(self):
-        df = self.INDICATOR.get_df(2)
+        df = self.Indicator.get_df(2)
         _time = df["index"].iloc[-1]
         _value = df["data"].iloc[-1]
         return _time,_value
@@ -204,13 +204,13 @@ class BasicMA(PlotDataItem):
         self.worker.start()    
     
     def load_historic_data(self,setdata):
-        _index,_data = self.INDICATOR.get_data()
+        _index,_data = self.Indicator.get_data()
         setdata.emit((_index,_data))        
     def add_data(self,setdata):
-        _index,_data = self.INDICATOR.get_data()
+        _index,_data = self.Indicator.get_data()
         setdata.emit((_index,_data))        
     def update_data(self,setdata):
-        _index,_data = self.INDICATOR.get_data()
+        _index,_data = self.Indicator.get_data()
         setdata.emit((_index,_data))        
     # def boundingRect(self) -> QRectF:
     #     x_left,x_right = int(self.chart.xAxis.range[0]),int(self.chart.xAxis.range[1])
