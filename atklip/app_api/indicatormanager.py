@@ -183,7 +183,7 @@ class IndicatorManager:
         if indicator != None:
             return indicator.get_data()
 
-    def add_candle(self,candle_infor: dict)->JAPAN_CANDLE|HEIKINASHI|SMOOTH_CANDLE|N_SMOOTH_CANDLE:
+    def add_candle(self,candle_infor: dict)->SMOOTH_CANDLE|N_SMOOTH_CANDLE:
         id_exchange = candle_infor.get("id_exchange")
         symbol:str=candle_infor.get("symbol")
         interval:str=candle_infor.get("interval")

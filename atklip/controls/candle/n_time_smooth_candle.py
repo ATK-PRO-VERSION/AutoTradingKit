@@ -37,7 +37,7 @@ class N_SMOOTH_CANDLE(QObject):
     sig_update_source = Signal()
     def __init__(self,precision,_candles,n,ma_type,period) -> None:
         super().__init__(parent=None)
-        self.ma_type:PD_MAType = ma_type
+        self.ma_type:str = ma_type
         self.period:int= period
         self._candles:JAPAN_CANDLE|HEIKINASHI =_candles
         self.n:int = n
@@ -321,19 +321,19 @@ class N_SMOOTH_CANDLE(QObject):
         
         for i in range(self.n):
             df = self.dict_n_frame[f"{i}-candles"].tail(self.period*self.n*5) #
-            highs = ta.ma(f"{self.ma_type.name}".lower(), df["high"],length=self.period).dropna()
+            highs = ta.ma(f"{self.ma_type}".lower(), df["high"],length=self.period).dropna()
             highs = highs.astype('float32')
-            lows = ta.ma(f"{self.ma_type.name}".lower(), df["low"],length=self.period).dropna()
+            lows = ta.ma(f"{self.ma_type}".lower(), df["low"],length=self.period).dropna()
             lows = lows.astype('float32')
-            closes = ta.ma(f"{self.ma_type.name}".lower(), df["close"],length=self.period).dropna()
+            closes = ta.ma(f"{self.ma_type}".lower(), df["close"],length=self.period).dropna()
             closes = closes.astype('float32')
-            opens = ta.ma(f"{self.ma_type.name}".lower(), df["open"],length=self.period).dropna()
+            opens = ta.ma(f"{self.ma_type}".lower(), df["open"],length=self.period).dropna()
             opens = opens.astype('float32')
-            hl2s = ta.ma(f"{self.ma_type.name}".lower(), df["hl2"],length=self.period).dropna()
+            hl2s = ta.ma(f"{self.ma_type}".lower(), df["hl2"],length=self.period).dropna()
             hl2s = hl2s.astype('float32')
-            hlc3s = ta.ma(f"{self.ma_type.name}".lower(), df["hlc3"],length=self.period).dropna()
+            hlc3s = ta.ma(f"{self.ma_type}".lower(), df["hlc3"],length=self.period).dropna()
             hlc3s = hlc3s.astype('float32')
-            ohlc4s = ta.ma(f"{self.ma_type.name}".lower(), df["ohlc4"],length=self.period).dropna()
+            ohlc4s = ta.ma(f"{self.ma_type}".lower(), df["ohlc4"],length=self.period).dropna()
             ohlc4s = ohlc4s.astype('float32')
             
             if _is_update:
@@ -389,31 +389,30 @@ class N_SMOOTH_CANDLE(QObject):
         self.ma_type = ma_type
         self.period = ma_period
         self.n = n_smooth_period
-        print(self.ma_type,self.period,self.n)
     
     def _gen_data(self):
         # len_old = len(self.candles)
         self.dict_n_frame[f"0-candles"] = self._candles.get_df()
         for i in range(self.n):
-            self.dict_n_ma[f"{i+1}-highs"] = ta.ma(f"{self.ma_type.name}".lower(), self.dict_n_frame[f"{i}-candles"]["high"],length=self.period).dropna()
+            self.dict_n_ma[f"{i+1}-highs"] = ta.ma(f"{self.ma_type}".lower(), self.dict_n_frame[f"{i}-candles"]["high"],length=self.period).dropna()
             self.dict_n_ma[f"{i+1}-highs"] = self.dict_n_ma[f"{i+1}-highs"].astype('float32')
 
-            self.dict_n_ma[f"{i+1}-lows"] = ta.ma(f"{self.ma_type.name}".lower(), self.dict_n_frame[f"{i}-candles"]["low"],length=self.period).dropna()
+            self.dict_n_ma[f"{i+1}-lows"] = ta.ma(f"{self.ma_type}".lower(), self.dict_n_frame[f"{i}-candles"]["low"],length=self.period).dropna()
             self.dict_n_ma[f"{i+1}-lows"] = self.dict_n_ma[f"{i+1}-lows"].astype('float32')
 
-            self.dict_n_ma[f"{i+1}-closes"] = ta.ma(f"{self.ma_type.name}".lower(), self.dict_n_frame[f"{i}-candles"]["close"],length=self.period).dropna()
+            self.dict_n_ma[f"{i+1}-closes"] = ta.ma(f"{self.ma_type}".lower(), self.dict_n_frame[f"{i}-candles"]["close"],length=self.period).dropna()
             self.dict_n_ma[f"{i+1}-closes"] = self.dict_n_ma[f"{i+1}-closes"].astype('float32')
 
-            self.dict_n_ma[f"{i+1}-opens"] = ta.ma(f"{self.ma_type.name}".lower(), self.dict_n_frame[f"{i}-candles"]["open"],length=self.period).dropna()
+            self.dict_n_ma[f"{i+1}-opens"] = ta.ma(f"{self.ma_type}".lower(), self.dict_n_frame[f"{i}-candles"]["open"],length=self.period).dropna()
             self.dict_n_ma[f"{i+1}-opens"] = self.dict_n_ma[f"{i+1}-opens"].astype('float32')
 
-            self.dict_n_ma[f"{i+1}-hl2s"] = ta.ma(f"{self.ma_type.name}".lower(), self.dict_n_frame[f"{i}-candles"]["hl2"],length=self.period).dropna()
+            self.dict_n_ma[f"{i+1}-hl2s"] = ta.ma(f"{self.ma_type}".lower(), self.dict_n_frame[f"{i}-candles"]["hl2"],length=self.period).dropna()
             self.dict_n_ma[f"{i+1}-hl2s"] = self.dict_n_ma[f"{i+1}-hl2s"].astype('float32')
 
-            self.dict_n_ma[f"{i+1}-hlc3s"] = ta.ma(f"{self.ma_type.name}".lower(), self.dict_n_frame[f"{i}-candles"]["hlc3"],length=self.period).dropna()
+            self.dict_n_ma[f"{i+1}-hlc3s"] = ta.ma(f"{self.ma_type}".lower(), self.dict_n_frame[f"{i}-candles"]["hlc3"],length=self.period).dropna()
             self.dict_n_ma[f"{i+1}-hlc3s"] = self.dict_n_ma[f"{i+1}-hlc3s"].astype('float32')
 
-            self.dict_n_ma[f"{i+1}-ohlc4s"] = ta.ma(f"{self.ma_type.name}".lower(), self.dict_n_frame[f"{i}-candles"]["ohlc4"],length=self.period).dropna()
+            self.dict_n_ma[f"{i+1}-ohlc4s"] = ta.ma(f"{self.ma_type}".lower(), self.dict_n_frame[f"{i}-candles"]["ohlc4"],length=self.period).dropna()
             self.dict_n_ma[f"{i+1}-ohlc4s"] = self.dict_n_ma[f"{i+1}-ohlc4s"].astype('float32')
 
             self.dict_n_frame[f"{i+1}-candles"] = self.compute(self.dict_n_frame[f"{i}-candles"],\
@@ -430,25 +429,25 @@ class N_SMOOTH_CANDLE(QObject):
         len_old = len(self.candles)
         self.dict_n_frame[f"old_0-candles"] = self._candles.get_df()
         for i in range(self.n):
-            self.dict_n_ma[f"{i+1}-highs"] = ta.ma(f"{self.ma_type.name}".lower(), self.dict_n_frame[f"old_{i}-candles"]["high"],length=self.period).dropna()
+            self.dict_n_ma[f"{i+1}-highs"] = ta.ma(f"{self.ma_type}".lower(), self.dict_n_frame[f"old_{i}-candles"]["high"],length=self.period).dropna()
             self.dict_n_ma[f"{i+1}-highs"] = self.dict_n_ma[f"{i+1}-highs"].astype('float32')
 
-            self.dict_n_ma[f"{i+1}-lows"] = ta.ma(f"{self.ma_type.name}".lower(), self.dict_n_frame[f"old_{i}-candles"]["low"],length=self.period).dropna()
+            self.dict_n_ma[f"{i+1}-lows"] = ta.ma(f"{self.ma_type}".lower(), self.dict_n_frame[f"old_{i}-candles"]["low"],length=self.period).dropna()
             self.dict_n_ma[f"{i+1}-lows"] = self.dict_n_ma[f"{i+1}-lows"].astype('float32')
 
-            self.dict_n_ma[f"{i+1}-closes"] = ta.ma(f"{self.ma_type.name}".lower(), self.dict_n_frame[f"old_{i}-candles"]["close"],length=self.period).dropna()
+            self.dict_n_ma[f"{i+1}-closes"] = ta.ma(f"{self.ma_type}".lower(), self.dict_n_frame[f"old_{i}-candles"]["close"],length=self.period).dropna()
             self.dict_n_ma[f"{i+1}-closes"] = self.dict_n_ma[f"{i+1}-closes"].astype('float32')
 
-            self.dict_n_ma[f"{i+1}-opens"] = ta.ma(f"{self.ma_type.name}".lower(), self.dict_n_frame[f"old_{i}-candles"]["open"],length=self.period).dropna()
+            self.dict_n_ma[f"{i+1}-opens"] = ta.ma(f"{self.ma_type}".lower(), self.dict_n_frame[f"old_{i}-candles"]["open"],length=self.period).dropna()
             self.dict_n_ma[f"{i+1}-opens"] = self.dict_n_ma[f"{i+1}-opens"].astype('float32')
 
-            self.dict_n_ma[f"{i+1}-hl2s"] = ta.ma(f"{self.ma_type.name}".lower(), self.dict_n_frame[f"old_{i}-candles"]["hl2"],length=self.period).dropna()
+            self.dict_n_ma[f"{i+1}-hl2s"] = ta.ma(f"{self.ma_type}".lower(), self.dict_n_frame[f"old_{i}-candles"]["hl2"],length=self.period).dropna()
             self.dict_n_ma[f"{i+1}-hl2s"] = self.dict_n_ma[f"{i+1}-hl2s"].astype('float32')
 
-            self.dict_n_ma[f"{i+1}-hlc3s"] = ta.ma(f"{self.ma_type.name}".lower(), self.dict_n_frame[f"old_{i}-candles"]["hlc3"],length=self.period).dropna()
+            self.dict_n_ma[f"{i+1}-hlc3s"] = ta.ma(f"{self.ma_type}".lower(), self.dict_n_frame[f"old_{i}-candles"]["hlc3"],length=self.period).dropna()
             self.dict_n_ma[f"{i+1}-hlc3s"] = self.dict_n_ma[f"{i+1}-hlc3s"].astype('float32')
 
-            self.dict_n_ma[f"{i+1}-ohlc4s"] = ta.ma(f"{self.ma_type.name}".lower(), self.dict_n_frame[f"old_{i}-candles"]["ohlc4"],length=self.period).dropna()
+            self.dict_n_ma[f"{i+1}-ohlc4s"] = ta.ma(f"{self.ma_type}".lower(), self.dict_n_frame[f"old_{i}-candles"]["ohlc4"],length=self.period).dropna()
             self.dict_n_ma[f"{i+1}-ohlc4s"] = self.dict_n_ma[f"{i+1}-ohlc4s"].astype('float32')
 
             self.dict_n_frame[f"old_{i+1}-candles"] = self.compute(self.dict_n_frame[f"old_{i}-candles"],\

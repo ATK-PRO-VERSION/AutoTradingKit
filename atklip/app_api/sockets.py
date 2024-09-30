@@ -1,5 +1,6 @@
 import asyncio
 from fastapi import FastAPI, Request, WebSocketDisconnect
+from ccxt import NetworkError
 from fastapi import FastAPI, WebSocket
 from .models import *
 from .ta_indicators import *
@@ -53,8 +54,8 @@ async def add_candle(request: Request):
         request (Request): _description_
     """
     candle_infor = await request.json()
-    managerindicator.add_candle(candle_infor)
-    
+    candle = managerindicator.add_candle(candle_infor)
+    candle.fisrt_gen_data()
 
 @app.get("/add-indicator")
 async def add_indicator(request: Request):
@@ -144,9 +145,12 @@ async def create_candle(websocket: WebSocket):
     jp_candle,heikin_candle,symbol,interval,_precision = managerindicator.create_exchange(client_exchange,socket_infor)
     try:
         await managerindicator.loop_watch_ohlcv(websocket,ws_exchange,jp_candle,heikin_candle,symbol,interval,_precision)
-    except WebSocketDisconnect:
+    except (WebSocketDisconnect,NetworkError):
         await managersocket.disconnect(socket_infor,websocket)
     finally:
+        "remove old exchange"
+        old_id_exchange = socket_infor.get("id_exchange")
+        await managerexchange.remove_exchange(old_id_exchange)
         heartbeat_task.cancel()
 
 @app.websocket("/change-candle")
@@ -167,9 +171,9 @@ async def change_candle(websocket: WebSocket):
     old_socket = managersocket.get_socket_by_name(old_socket_infor)
     if old_socket != None:
         await managersocket.disconnect(old_socket_infor,old_socket)
-    "remove old exchange"
-    old_id_exchange = old_socket_infor.get("id_exchange")
-    await managerexchange.remove_exchange(old_id_exchange)
+    # "remove old exchange"
+    # old_id_exchange = old_socket_infor.get("id_exchange")
+    # await managerexchange.remove_exchange(old_id_exchange)
     
     "add and setup new-exchange"
     new_id_exchange = new_socket_infor.get("id_exchange")
@@ -188,9 +192,10 @@ async def change_candle(websocket: WebSocket):
     
     try:
         await managerindicator.loop_watch_ohlcv(websocket,ws_exchange,jp_candle,heikin_candle,new_symbol,new_interval,_precision)
-    except WebSocketDisconnect:
+    except (WebSocketDisconnect,NetworkError):
         await managersocket.disconnect(socket_infor,websocket)
     finally:
-        heartbeat_task.cancel()
-    
+        old_id_exchange = new_socket_infor.get("id_exchange")
+        await managerexchange.remove_exchange(old_id_exchange)
+        heartbeat_task.cancel()    
     

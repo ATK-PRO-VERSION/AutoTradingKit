@@ -35,7 +35,7 @@ class SMOOTH_CANDLE(QObject):
     
     def __init__(self,precision,_candles,ma_type,period) -> None:
         super().__init__(parent=None)
-        self.ma_type:PD_MAType = ma_type
+        self.ma_type:str = ma_type
         self.period:int= period
         self._candles: JAPAN_CANDLE|HEIKINASHI|self =_candles
         
@@ -319,19 +319,19 @@ class SMOOTH_CANDLE(QObject):
         if self.candles != []:
             _last_time = self.candles[-1].time
             df:pd.DataFrame = self._candles.get_df(self.period*5)
-            highs = ta.ma(f"{self.ma_type.name}".lower(), df["high"],length=self.period).dropna()
+            highs = ta.ma(f"{self.ma_type}".lower(), df["high"],length=self.period).dropna()
             highs = highs.astype('float32')
-            lows = ta.ma(f"{self.ma_type.name}".lower(), df["low"],length=self.period).dropna()
+            lows = ta.ma(f"{self.ma_type}".lower(), df["low"],length=self.period).dropna()
             lows = lows.astype('float32')
-            closes = ta.ma(f"{self.ma_type.name}".lower(), df["close"],length=self.period).dropna()
+            closes = ta.ma(f"{self.ma_type}".lower(), df["close"],length=self.period).dropna()
             closes = closes.astype('float32')
-            opens = ta.ma(f"{self.ma_type.name}".lower(), df["open"],length=self.period).dropna()
+            opens = ta.ma(f"{self.ma_type}".lower(), df["open"],length=self.period).dropna()
             opens = opens.astype('float32')
-            hl2s = ta.ma(f"{self.ma_type.name}".lower(), df["hl2"],length=self.period).dropna()
+            hl2s = ta.ma(f"{self.ma_type}".lower(), df["hl2"],length=self.period).dropna()
             hl2s = hl2s.astype('float32')
-            hlc3s = ta.ma(f"{self.ma_type.name}".lower(), df["hlc3"],length=self.period).dropna()
+            hlc3s = ta.ma(f"{self.ma_type}".lower(), df["hlc3"],length=self.period).dropna()
             hlc3s = hlc3s.astype('float32')
-            ohlc4s = ta.ma(f"{self.ma_type.name}".lower(), df["ohlc4"],length=self.period).dropna()
+            ohlc4s = ta.ma(f"{self.ma_type}".lower(), df["ohlc4"],length=self.period).dropna()
             ohlc4s = ohlc4s.astype('float32')
 
             if _new_time == _last_time:
@@ -402,25 +402,25 @@ class SMOOTH_CANDLE(QObject):
         _pre_len = len(self.df)
 
         df:pd.DataFrame = self._candles.get_df().iloc[:-1*_pre_len]
-        self.highs = ta.ma(f"{self.ma_type.name}".lower(), df["high"],length=self.period).dropna()
+        self.highs = ta.ma(f"{self.ma_type}".lower(), df["high"],length=self.period).dropna()
         self.highs = self.highs.astype('float32')
 
-        self.lows = ta.ma(f"{self.ma_type.name}".lower(), df["low"],length=self.period).dropna()
+        self.lows = ta.ma(f"{self.ma_type}".lower(), df["low"],length=self.period).dropna()
         self.lows = self.lows.astype('float32')
 
-        self.closes = ta.ma(f"{self.ma_type.name}".lower(), df["close"],length=self.period).dropna()
+        self.closes = ta.ma(f"{self.ma_type}".lower(), df["close"],length=self.period).dropna()
         self.closes = self.closes.astype('float32')
 
-        self.opens = ta.ma(f"{self.ma_type.name}".lower(), df["open"],length=self.period).dropna()
+        self.opens = ta.ma(f"{self.ma_type}".lower(), df["open"],length=self.period).dropna()
         self.opens = self.opens.astype('float32')
 
-        self.hl2s = ta.ma(f"{self.ma_type.name}".lower(), df["hl2"],length=self.period).dropna()
+        self.hl2s = ta.ma(f"{self.ma_type}".lower(), df["hl2"],length=self.period).dropna()
         self.hl2s = self.hl2s.astype('float32')
 
-        self.hlc3s = ta.ma(f"{self.ma_type.name}".lower(), df["hlc3"],length=self.period).dropna()
+        self.hlc3s = ta.ma(f"{self.ma_type}".lower(), df["hlc3"],length=self.period).dropna()
         self.hlc3s = self.hlc3s.astype('float32')
 
-        self.ohlc4s = ta.ma(f"{self.ma_type.name}".lower(), df["ohlc4"],length=self.period).dropna()
+        self.ohlc4s = ta.ma(f"{self.ma_type}".lower(), df["ohlc4"],length=self.period).dropna()
         self.ohlc4s = self.ohlc4s.astype('float32')
 
         _len = len(self.ohlc4s)
@@ -462,25 +462,25 @@ class SMOOTH_CANDLE(QObject):
         self.dict_time_ohlcv: Dict[int, OHLCV] = {}
         
         df:pd.DataFrame = self._candles.get_df()
-        self.highs = ta.ma(f"{self.ma_type.name}".lower(), df["high"],length=self.period).dropna()
+        self.highs = ta.ma(f"{self.ma_type}".lower(), df["high"],length=self.period).dropna()
         self.highs = self.highs.astype('float32')
 
-        self.lows = ta.ma(f"{self.ma_type.name}".lower(), df["low"],length=self.period).dropna()
+        self.lows = ta.ma(f"{self.ma_type}".lower(), df["low"],length=self.period).dropna()
         self.lows = self.lows.astype('float32')
 
-        self.closes = ta.ma(f"{self.ma_type.name}".lower(), df["close"],length=self.period).dropna()
+        self.closes = ta.ma(f"{self.ma_type}".lower(), df["close"],length=self.period).dropna()
         self.closes = self.closes.astype('float32')
 
-        self.opens = ta.ma(f"{self.ma_type.name}".lower(), df["open"],length=self.period).dropna()
+        self.opens = ta.ma(f"{self.ma_type}".lower(), df["open"],length=self.period).dropna()
         self.opens = self.opens.astype('float32')
 
-        self.hl2s = ta.ma(f"{self.ma_type.name}".lower(), df["hl2"],length=self.period).dropna()
+        self.hl2s = ta.ma(f"{self.ma_type}".lower(), df["hl2"],length=self.period).dropna()
         self.hl2s = self.hl2s.astype('float32')
 
-        self.hlc3s = ta.ma(f"{self.ma_type.name}".lower(), df["hlc3"],length=self.period).dropna()
+        self.hlc3s = ta.ma(f"{self.ma_type}".lower(), df["hlc3"],length=self.period).dropna()
         self.hlc3s = self.hlc3s.astype('float32')
 
-        self.ohlc4s = ta.ma(f"{self.ma_type.name}".lower(), df["ohlc4"],length=self.period).dropna()
+        self.ohlc4s = ta.ma(f"{self.ma_type}".lower(), df["ohlc4"],length=self.period).dropna()
         self.ohlc4s = self.ohlc4s.astype('float32')
 
         _len = len(self.ohlc4s)
@@ -509,6 +509,7 @@ class SMOOTH_CANDLE(QObject):
         return self.candles
     
     def update(self, _candle:List[OHLCV]):
+        print("smoothcandle", _candle)
         if (self.first_gen == True) and (self.is_genering == False):
             if self._candles.candles != []:
                 new_candle = _candle[-1]
