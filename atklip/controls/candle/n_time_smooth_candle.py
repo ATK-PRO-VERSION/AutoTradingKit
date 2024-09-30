@@ -4,7 +4,7 @@ import time
 import pandas as pd
 from typing import Any, Dict, List,Tuple
 from dataclasses import dataclass
-from PySide6.QtCore import Qt, Signal,QObject,QCoreApplication
+from PySide6.QtCore import Qt, Signal,QObject,QCoreApplication,Slot
 
 from atklip.controls import pandas_ta as ta
 from atklip.controls.ma_type import  PD_MAType
@@ -93,18 +93,18 @@ class N_SMOOTH_CANDLE(QObject):
     
     def get_last_row_df(self):
         return self.df.iloc[-1]
-    
+    @Slot()
     def update_worker(self,candle):
         self.worker_ = None
         self.worker_ = CandleWorker(self.update,candle)
         self.worker_.start()
-    
+    @Slot()
     def update_historic_worker(self,n):
         self.worker = None
         self.worker = CandleWorker(self.gen_historic_data,n)
         self.worker.start()
 
-    
+    @Slot()
     def threadpool_asyncworker(self):
         self.worker = None
         self.worker = CandleWorker(self.fisrt_gen_data)
