@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Request
+import asyncio
+from fastapi import FastAPI, Request, WebSocketDisconnect
 from fastapi import FastAPI, WebSocket
 from .models import *
 from .ta_indicators import *
@@ -129,9 +130,10 @@ async def create_candle(websocket: WebSocket):
         websocket (WebSocket): _description_
     """
     await websocket.accept()
-    candle_infor = await websocket.receive_json()
-    await managersocket.connect(candle_infor,websocket)
-    id_exchange = candle_infor.get("id_exchange")
+    socket_infor = await websocket.receive_json()
+    heartbeat_task = asyncio.create_task(managersocket.send_heartbeat(websocket))
+    await managersocket.connect(socket_infor,websocket)
+    id_exchange = socket_infor.get("id_exchange")
     managerexchange.add_exchange(id_exchange)
     ws_exchange = managerexchange.get_ws_exchange(id_exchange)
     client_exchange = managerexchange.get_client_exchange(id_exchange)
@@ -139,9 +141,14 @@ async def create_candle(websocket: WebSocket):
     client_exchange.load_markets()
     await ws_exchange.load_markets()
     
-    jp_candle,heikin_candle,symbol,interval,_precision = managerindicator.create_exchange(client_exchange,candle_infor)
-    await managerindicator.loop_watch_ohlcv(managersocket,websocket,ws_exchange,jp_candle,heikin_candle,symbol,interval,_precision)
-        
+    jp_candle,heikin_candle,symbol,interval,_precision = managerindicator.create_exchange(client_exchange,socket_infor)
+    try:
+        await managerindicator.loop_watch_ohlcv(websocket,ws_exchange,jp_candle,heikin_candle,symbol,interval,_precision)
+    except WebSocketDisconnect:
+        await managersocket.disconnect(socket_infor,websocket)
+    finally:
+        heartbeat_task.cancel()
+
 @app.websocket("/change-candle")
 async def change_candle(websocket: WebSocket):
     """_summary_
@@ -150,34 +157,47 @@ async def change_candle(websocket: WebSocket):
         websocket (WebSocket): _description_
     """   
     await websocket.accept()
-    candle_infor = await websocket.receive_json()
-    old_candle_infor = candle_infor["old"]
-    new_candle_infor  = candle_infor["new"]
-    await managersocket.connect(new_candle_infor,websocket)
-    old_socket = managersocket.get_socket_by_name(old_candle_infor)
+    socket_infor = await websocket.receive_json()
+    old_socket_infor = socket_infor["old"]
+    new_socket_infor  = socket_infor["new"]
+    await managersocket.connect(new_socket_infor,websocket)
+    
+    "check old socket and disconnect its"
+    old_socket = managersocket.get_socket_by_name(old_socket_infor)
     if old_socket != None:
-        await managersocket.disconnect(old_candle_infor)
+        await managersocket.disconnect(old_socket_infor,old_socket)
+    "remove old exchange"
+    old_id_exchange = old_socket_infor.get("id_exchange")
+    managerexchange.remove_exchange(old_id_exchange)
     
-    id_exchange = new_candle_infor.get("id_exchange")
-    managerexchange.add_exchange(id_exchange)
+    "add and setup new-exchange"
+    new_id_exchange = new_socket_infor.get("id_exchange")
+    managerexchange.add_exchange(new_id_exchange)
     
-    ws_exchange = managerexchange.get_ws_exchange(id_exchange)
-    client_exchange = managerexchange.get_client_exchange(id_exchange)
+    ws_exchange = managerexchange.get_ws_exchange(new_id_exchange)
+    client_exchange = managerexchange.get_client_exchange(new_id_exchange)
     
     client_exchange.load_markets()
     await ws_exchange.load_markets()
     
-    managerindicator.delete_old_indicator(old_candle_infor)
-    managerindicator.reset_candle(client_exchange,old_candle_infor,new_candle_infor)
+    "get all old candles"
+    all_old_candles = managerindicator.get_list_candles(old_socket_infor)
     
-    pre_active_canldes:dict = managerindicator.del_canldes_active_on_socket(old_candle_infor)
+    if all_old_candles != []:
+        for dict_candle in all_old_candles:
+            candle, _type = dict_candle.items()
+    
+    managerindicator.delete_old_indicator(old_socket_infor)
+    managerindicator.reset_candle(client_exchange,old_socket_infor,new_socket_infor)
+    
+    pre_active_canldes:dict = managerindicator.del_canldes_active_on_socket(old_socket_infor)
     
     
     
-    jp_candle,heikin_candle,symbol,interval,_precision = managerindicator.create_exchange(client_exchange,new_candle_infor)
-    await managerindicator.loop_watch_ohlcv(managersocket,websocket,ws_exchange,jp_candle,heikin_candle,symbol,interval,_precision)
+    jp_candle,heikin_candle,symbol,interval,_precision = managerindicator.create_exchange(client_exchange,new_socket_infor)
+    await managerindicator.loop_watch_ohlcv(websocket,ws_exchange,jp_candle,heikin_candle,symbol,interval,_precision)
 
     "add smooth and super smooth candle if they are activing"
-    managerindicator.add_new_candle(new_candle_infor,pre_active_canldes)
+    managerindicator.add_new_candle(new_socket_infor,pre_active_canldes)
     
     "change input-all indicator"

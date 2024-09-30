@@ -35,6 +35,8 @@ class HEIKINASHI(QObject):
     signal_delete = Signal()
     sig_update_source = Signal()
     
+    sig_reset_source = Signal(str)
+    
     def __init__(self,precicion,_candle) -> None:
         super().__init__(parent=None)
         self._candles:JAPAN_CANDLE = _candle
@@ -48,8 +50,27 @@ class HEIKINASHI(QObject):
         self._source_name = "HEIKINASHI"
         self.precicion = precicion
         self.df = pd.DataFrame([])
-        
-        
+    
+    def connect_signals(self):
+        if not isinstance(self._candles,JAPAN_CANDLE):
+            self._candles.setParent(self)
+            self.signal_delete.connect(self._candles.signal_delete)
+        self._candles.sig_update_source.connect(self.sig_update_source,Qt.ConnectionType.AutoConnection)
+    
+    def disconnect_signals(self):
+        try:
+            if not isinstance(self._candles,JAPAN_CANDLE):
+                self.signal_delete.disconnect(self._candles.signal_delete)
+            self._candles.sig_update_source.disconnect(self.sig_update_source)
+        except:
+            pass
+    
+    def update_source(self,candle:JAPAN_CANDLE):
+        self.disconnect_signals()
+        self._candles = candle
+        self.connect_signals()
+    
+
     @property
     def source_name(self):
         return self._source_name

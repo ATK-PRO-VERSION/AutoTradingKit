@@ -23,6 +23,8 @@ class JAPAN_CANDLE(QObject):
     signal_delete = Signal()
     sig_update_source = Signal()
     
+    sig_reset_source = Signal(str)
+    
     def __init__(self) -> None:
         super().__init__(parent=None)
         self.first_gen = False

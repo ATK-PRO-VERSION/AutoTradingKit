@@ -30,8 +30,11 @@ class ExchangeManager:
         return self.map_exchange[f"client-{id_exchange}"]
     
     def remove_exchange(self,id_exchange:str):
-        if "ws-" in id_exchange:
-            asyncio.run(self.map_exchange[id_exchange].close())
-        else:
-            self.map_exchange[id_exchange].close()
-        del self.map_exchange[id_exchange]
+        try:
+            asyncio.run(self.map_exchange[f"ws-{id_exchange}"].close())
+            self.map_exchange[f"client-{id_exchange}"].close()
+            del self.map_exchange[f"ws-{id_exchange}"]
+            del self.map_exchange[f"client-{id_exchange}"]
+        except:
+            pass
+        

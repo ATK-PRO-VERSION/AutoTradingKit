@@ -29,6 +29,10 @@ class SMOOTH_CANDLE(QObject):
     dict_index_time = {}
     signal_delete = Signal()
     sig_update_source = Signal()
+    
+    
+    sig_reset_source = Signal(str)
+    
     def __init__(self,precision,_candles,ma_type,period) -> None:
         super().__init__(parent=None)
         self.ma_type:PD_MAType = ma_type
@@ -36,7 +40,7 @@ class SMOOTH_CANDLE(QObject):
         self._candles: JAPAN_CANDLE|HEIKINASHI|self =_candles
         
         self.signal_delete.connect(self.deleteLater)
-        self._candles.sig_update_source.connect(self.sig_update_source,Qt.ConnectionType.AutoConnection)
+        
         self._precision = precision
         self.first_gen = False
         self.is_genering = True
@@ -44,11 +48,35 @@ class SMOOTH_CANDLE(QObject):
 
         self.df = pd.DataFrame([])
 
+        self._candles.sig_update_source.connect(self.sig_update_source,Qt.ConnectionType.AutoConnection)
         self._candles.sig_reset_all.connect(self.threadpool_asyncworker,Qt.ConnectionType.AutoConnection)
         self._candles.sig_update_candle.connect(self.update_worker,Qt.ConnectionType.QueuedConnection)
         self._candles.sig_add_candle.connect(self.update_worker,Qt.ConnectionType.QueuedConnection)
         self._candles.sig_add_historic.connect(self.update_historic_worker,Qt.ConnectionType.QueuedConnection)
 
+    def connect_signals(self):
+        self._candles.sig_update_source.connect(self.sig_update_source,Qt.ConnectionType.AutoConnection)
+        self._candles.sig_reset_all.connect(self.threadpool_asyncworker,Qt.ConnectionType.AutoConnection)
+        self._candles.sig_update_candle.connect(self.update_worker,Qt.ConnectionType.QueuedConnection)
+        self._candles.sig_add_candle.connect(self.update_worker,Qt.ConnectionType.QueuedConnection)
+        self._candles.sig_add_historic.connect(self.update_historic_worker,Qt.ConnectionType.QueuedConnection)
+    
+    def disconnect_signals(self):
+        try:
+            self._candles.sig_update_source.disconnect(self.sig_update_source)
+            self._candles.sig_reset_all.disconnect(self.threadpool_asyncworker)
+            self._candles.sig_update_candle.disconnect(self.update_worker)
+            self._candles.sig_add_candle.disconnect(self.update_worker)
+            self._candles.sig_add_historic.disconnect(self.update_historic_worker)
+        except:
+            pass
+    
+    def update_source(self,candle:JAPAN_CANDLE|HEIKINASHI):
+        self.disconnect_signals()
+        self._candles = candle
+        self.connect_signals()
+        
+    
     @property
     def source_name(self):
         return self._source_name

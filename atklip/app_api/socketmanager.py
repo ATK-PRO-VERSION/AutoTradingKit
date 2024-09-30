@@ -1,5 +1,6 @@
 
-from fastapi import WebSocket
+import asyncio
+from fastapi import WebSocket, WebSocketDisconnect
 from typing import List, Dict
 
 from .models import *
@@ -71,3 +72,11 @@ class ConnectionManager:
     async def broadcast(self, message: str):
         for connection in self.active_connections.values():
             await connection.send_text(message)
+            
+    async def send_heartbeat(self, websocket: WebSocket):
+        while True:
+            try:
+                await asyncio.sleep(30)
+                await websocket.send_text("heartbeat")
+            except WebSocketDisconnect:
+                break

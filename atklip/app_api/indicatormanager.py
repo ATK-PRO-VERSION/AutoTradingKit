@@ -17,36 +17,37 @@ class IndicatorManager:
         self.map_candle_indicator: Dict[str:list] = {}
         self.managersocket:ConnectionManager = managersocket
 
-    
     def send_msg(self,data, websocket:WebSocket):    
         asyncio.run(websocket.send_text(json.dumps(data)))
 
-
     def reset_candle(self,client_exchange,old_candle_infor,new_candle_infor):
-        
-        old_symbol:str=old_candle_infor.get("symbol")
-        old_interval:str=old_candle_infor.get("interval")
-        
         new_symbol:str=new_candle_infor.get("symbol")
         new_interval:str=new_candle_infor.get("interval")
-        
+        new_id_exchange:str = new_candle_infor.get("id_exchange")
         
         data = client_exchange.fetch_ohlcv(new_symbol,new_interval,limit=1500) 
         market = client_exchange.market(new_symbol)
         _precision = convert_precicion(market['precision']['price'])
         
         old_candle_infor["name"] = "japancandle"
-        
         jp_candle:JAPAN_CANDLE = self.get_candle(old_candle_infor)
-        
+        jp_name = f"{new_id_exchange}-japancandle-{new_symbol}-{new_interval}"
+        self.map_candle[jp_name] = jp_candle
+        jp_candle.source_name = jp_name
         jp_candle.fisrt_gen_data(data,_precision)
+        jp_candle.sig_reset_source.emit(jp_candle.source_name)
         
         old_candle_infor["name"] = "heikinashi"
-        
         heikin_candle:HEIKINASHI = self.get_candle(old_candle_infor)
-        heikin_candle.fisrt_gen_data()
+        heikin_name = f"{new_id_exchange}-heikinashi-{new_symbol}-{new_interval}"
         
-    
+        self.map_candle[heikin_name] = heikin_candle
+        heikin_candle.source_name = heikin_name
+        heikin_candle.update_source(jp_candle)
+        heikin_candle.fisrt_gen_data()
+        heikin_candle.sig_reset_source.emit(heikin_candle.source_name)
+        
+
     def create_exchange(self,crypto_ex,candle_infor:dict):
         symbol:str=candle_infor.get("symbol")
         interval:str=candle_infor.get("interval")
@@ -85,46 +86,41 @@ class IndicatorManager:
             supersmoothcandle.fisrt_gen_data()
         
 
-    async def loop_watch_ohlcv(self,websocket,crypto_ex_ws,jp_candle:JAPAN_CANDLE,heikin_candle:HEIKINASHI,symbol,interval,_precision):
+    async def loop_watch_ohlcv(self,websocket:WebSocket,crypto_ex_ws,jp_candle:JAPAN_CANDLE,heikin_candle:HEIKINASHI,symbol,interval,_precision):
         _ohlcv = []
         while self.managersocket.socket_is_active(websocket):
-            try:            
-                if "watchOHLCV" in list(crypto_ex_ws.has.keys()):
-                    if _ohlcv == []:
-                        _ohlcv = await crypto_ex_ws.fetch_ohlcv(symbol,interval,limit=2)
-                    else:
-                        ohlcv = await crypto_ex_ws.watch_ohlcv(symbol,interval,limit=2)
-                        if _ohlcv[-1][0]/1000 == ohlcv[-1][0]/1000:
-                            _ohlcv[-1] = ohlcv[-1]
-                        else:
-                            _ohlcv.append(ohlcv[-1])
-                            _ohlcv = _ohlcv[-2:]
-                elif "fetchOHLCV" in list(crypto_ex_ws.has.keys()):
+            if "watchOHLCV" in list(crypto_ex_ws.has.keys()):
+                if _ohlcv == []:
                     _ohlcv = await crypto_ex_ws.fetch_ohlcv(symbol,interval,limit=2)
                 else:
-                    await asyncio.sleep(0.3)
+                    ohlcv = await crypto_ex_ws.watch_ohlcv(symbol,interval,limit=2)
+                    if _ohlcv[-1][0]/1000 == ohlcv[-1][0]/1000:
+                        _ohlcv[-1] = ohlcv[-1]
+                    else:
+                        _ohlcv.append(ohlcv[-1])
+                        _ohlcv = _ohlcv[-2:]
+            elif "fetchOHLCV" in list(crypto_ex_ws.has.keys()):
+                _ohlcv = await crypto_ex_ws.fetch_ohlcv(symbol,interval,limit=2)
+            else:
+                await asyncio.sleep(0.3)
 
-                _is_add_candle = False
-                if len(_ohlcv) >= 2:
-                    pre_ohlcv = OHLCV(_ohlcv[-2][1],_ohlcv[-2][2],_ohlcv[-2][3],_ohlcv[-2][4], round((_ohlcv[-2][2]+_ohlcv[-2][3])/2,_precision) , round((_ohlcv[-2][2]+_ohlcv[-2][3]+_ohlcv[-2][4])/3,_precision), round((_ohlcv[-2][1]+_ohlcv[-2][2]+_ohlcv[-2][3]+_ohlcv[-2][4])/4,_precision),_ohlcv[-2][5],_ohlcv[-2][0]/1000,0)
-                    last_ohlcv = OHLCV(_ohlcv[-1][1],_ohlcv[-1][2],_ohlcv[-1][3],_ohlcv[-1][4], round((_ohlcv[-1][2]+_ohlcv[-1][3])/2,_precision) , round((_ohlcv[-1][2]+_ohlcv[-1][3]+_ohlcv[-1][4])/3,_precision), round((_ohlcv[-1][1]+_ohlcv[-1][2]+_ohlcv[-1][3]+_ohlcv[-1][4])/4,_precision),_ohlcv[-1][5],_ohlcv[-1][0]/1000,0)
-                    _is_add_candle = jp_candle.update([pre_ohlcv,last_ohlcv])
-                    heikin_candle.update(jp_candle.candles[-2:],_is_add_candle)
-                    # data = {"is_added_candle": False,"lastcandle":""}
-                    if _is_add_candle != None:
-                        data = {"is_added_candle": _is_add_candle,
-                                "lastcandle": jp_candle.candles[-1].__dict__}
-                        try:
-                            await websocket.send_text(json.dumps(data))
-                        except (RuntimeError, WebSocketDisconnect):
-                            await self.managersocket.disconnect(websocket)
-                            await crypto_ex_ws.close()
-                            break
-            except WebSocketDisconnect:
-                await self.managersocket.disconnect(websocket)
-                await crypto_ex_ws.close()
-                break
-    
+            _is_add_candle = False
+            if len(_ohlcv) >= 2:
+                pre_ohlcv = OHLCV(_ohlcv[-2][1],_ohlcv[-2][2],_ohlcv[-2][3],_ohlcv[-2][4], round((_ohlcv[-2][2]+_ohlcv[-2][3])/2,_precision) , round((_ohlcv[-2][2]+_ohlcv[-2][3]+_ohlcv[-2][4])/3,_precision), round((_ohlcv[-2][1]+_ohlcv[-2][2]+_ohlcv[-2][3]+_ohlcv[-2][4])/4,_precision),_ohlcv[-2][5],_ohlcv[-2][0]/1000,0)
+                last_ohlcv = OHLCV(_ohlcv[-1][1],_ohlcv[-1][2],_ohlcv[-1][3],_ohlcv[-1][4], round((_ohlcv[-1][2]+_ohlcv[-1][3])/2,_precision) , round((_ohlcv[-1][2]+_ohlcv[-1][3]+_ohlcv[-1][4])/3,_precision), round((_ohlcv[-1][1]+_ohlcv[-1][2]+_ohlcv[-1][3]+_ohlcv[-1][4])/4,_precision),_ohlcv[-1][5],_ohlcv[-1][0]/1000,0)
+                _is_add_candle = jp_candle.update([pre_ohlcv,last_ohlcv])
+                heikin_candle.update(jp_candle.candles[-2:],_is_add_candle)
+                # data = {"is_added_candle": False,"lastcandle":""}
+                if _is_add_candle != None:
+                    data = {"is_added_candle": _is_add_candle,
+                            "lastcandle": jp_candle.candles[-1].__dict__}
+                    try:
+                        await websocket.send_text(json.dumps(data))
+                    except (RuntimeError, WebSocketDisconnect):
+                        await self.managersocket.disconnect(websocket)
+                        await crypto_ex_ws.close()
+                        break
+
     
     def add_indicator(self,ta_infor: dict):
         """_summary_
@@ -264,13 +260,7 @@ class IndicatorManager:
     def get_list_indicator(self):
         return list(self.map_indicator.keys())
     
-    def get_list_candle(self):
-        return list(self.map_candle.keys())
-    
-    def delete_old_indicator(self,old_candle_infor):
-        list_old_indicator = self.get_list_indicator_of_candle(old_candle_infor['source_name'])
-    
-    def del_canldes_active_on_socket(self,candle_infor):
+    def get_list_candles(self,candle_infor)-> list[dict]:
         id_exchange = candle_infor.get("id_exchange")
         symbol:str=candle_infor.get("symbol")
         interval:str=candle_infor.get("interval")
@@ -280,30 +270,23 @@ class IndicatorManager:
         name:str=candle_infor.get("name")
         source:str=candle_infor.get("source")
         
-        smoothcandle_id = f"{id_exchange}-{source}-smoothcandle-{symbol}-{interval}-{ma_type}"
         japancandle_id = f"{id_exchange}-japancandle-{symbol}-{interval}"
-        supersmoothcandle_id =f"{id_exchange}-{source}-supersmoothcandle-{symbol}-{interval}-{ma_type}-{ma_leng}-{n_smooth}"
         heikinashi_id = f"{id_exchange}-heikinashi-{symbol}-{interval}"
-        output = {
-            "japancandle":False,
-            "smoothcandle":False,
-            "supersmoothcandle":False,
-            "heikinashi":False   
-        }
-        for candle_id in [smoothcandle_id,japancandle_id,supersmoothcandle_id,heikinashi_id]:
-            if candle_id in self.map_candle.keys():
-                if "heikinashi" in candle_id:
-                    output["heikinashi"] = True
-                elif "japancandle" in candle_id:
-                    output["japancandle"] = True
-                elif "smoothcandle" in candle_id:
-                    output["smoothcandle"] = True
-                elif "supersmoothcandle":
-                    output["supersmoothcandle"] = True
-                candle = self.map_candle[candle_id]
-                del self.map_candle[candle_id]
-                candle.deleteLater()
+        output = []
+        for candle_id in list(self.map_candle.keys()):
+            if heikinashi_id == candle_id:
+                output.append({self.map_candle[candle_id]:"heikinashi"}) 
+            elif japancandle_id == candle_id:
+                output.append({self.map_candle[candle_id]:"japancandle"}) 
+            elif id_exchange in candle_id and "smoothcandle" in candle_id and f"{symbol}-{interval}" in candle_id:
+                output.append({self.map_candle[candle_id]:"smoothcandle"}) 
+            elif id_exchange in candle_id and "supersmoothcandle" in candle_id and f"{symbol}-{interval}" in candle_id:
+                output.append({self.map_candle[candle_id]:"supersmoothcandle"})
         return output
+    
+    def delete_old_indicator(self,old_candle_infor):
+        list_old_indicator = self.get_list_indicator_of_candle(old_candle_infor['source_name'])
+    
 
     def get_candle(self,candle_infor:dict)->JAPAN_CANDLE|HEIKINASHI|SMOOTH_CANDLE|N_SMOOTH_CANDLE:
         id_exchange = candle_infor.get("id_exchange")
