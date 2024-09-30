@@ -25,6 +25,8 @@ cryptofeed[all]
 polars-lts-cpu
 python-rapidjson
 humanize
+websockets
+wsproto
 #polars-ta
 # pip install 'polars[all]'
 # TA-Lib==0.4.28

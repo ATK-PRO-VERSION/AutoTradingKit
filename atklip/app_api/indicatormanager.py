@@ -46,6 +46,8 @@ class IndicatorManager:
         heikin_candle.update_source(jp_candle)
         heikin_candle.fisrt_gen_data()
         heikin_candle.sig_reset_source.emit(heikin_candle.source_name)
+
+        return jp_candle, heikin_candle,new_symbol,new_interval, _precision
         
 
     def create_exchange(self,crypto_ex,candle_infor:dict):
@@ -117,8 +119,6 @@ class IndicatorManager:
                     try:
                         await websocket.send_text(json.dumps(data))
                     except (RuntimeError, WebSocketDisconnect):
-                        await self.managersocket.disconnect(websocket)
-                        await crypto_ex_ws.close()
                         break
 
     

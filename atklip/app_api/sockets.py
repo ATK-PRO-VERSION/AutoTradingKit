@@ -94,12 +94,13 @@ async def active_markets():
     return {"markets":active_market}
 
 @app.get("/get-active-candles/")
-async def active_candles():
+async def active_candles(request: Request):
     """_summary_
     Returns:
         _type_: _description_
     """
-    active_candle = managerindicator.get_list_candle()
+    candle_infor = await request.json()
+    active_candle = managerindicator.get_list_candles(candle_infor)
     return {"candles":active_candle}
 
 @app.get("/change-candle-input")
@@ -119,7 +120,6 @@ async def change_candle_input(request: Request):
     
     active_candle = managerindicator.get_list_candle()
     return {"candles":active_candle}
-
 
 
 @app.websocket("/create-candle")
@@ -158,6 +158,7 @@ async def change_candle(websocket: WebSocket):
     """   
     await websocket.accept()
     socket_infor = await websocket.receive_json()
+    heartbeat_task = asyncio.create_task(managersocket.send_heartbeat(websocket))
     old_socket_infor = socket_infor["old"]
     new_socket_infor  = socket_infor["new"]
     await managersocket.connect(new_socket_infor,websocket)
@@ -168,7 +169,7 @@ async def change_candle(websocket: WebSocket):
         await managersocket.disconnect(old_socket_infor,old_socket)
     "remove old exchange"
     old_id_exchange = old_socket_infor.get("id_exchange")
-    managerexchange.remove_exchange(old_id_exchange)
+    await managerexchange.remove_exchange(old_id_exchange)
     
     "add and setup new-exchange"
     new_id_exchange = new_socket_infor.get("id_exchange")
@@ -180,24 +181,16 @@ async def change_candle(websocket: WebSocket):
     client_exchange.load_markets()
     await ws_exchange.load_markets()
     
-    "get all old candles"
-    all_old_candles = managerindicator.get_list_candles(old_socket_infor)
     
-    if all_old_candles != []:
-        for dict_candle in all_old_candles:
-            candle, _type = dict_candle.items()
+    jp_candle, heikin_candle,new_symbol,new_interval, _precision = managerindicator.reset_candle(client_exchange,old_socket_infor,new_socket_infor)    
     
-    managerindicator.delete_old_indicator(old_socket_infor)
-    managerindicator.reset_candle(client_exchange,old_socket_infor,new_socket_infor)
+    # jp_candle,heikin_candle,symbol,interval,_precision = managerindicator.create_exchange(client_exchange,new_socket_infor)
     
-    pre_active_canldes:dict = managerindicator.del_canldes_active_on_socket(old_socket_infor)
+    try:
+        await managerindicator.loop_watch_ohlcv(websocket,ws_exchange,jp_candle,heikin_candle,new_symbol,new_interval,_precision)
+    except WebSocketDisconnect:
+        await managersocket.disconnect(socket_infor,websocket)
+    finally:
+        heartbeat_task.cancel()
     
     
-    
-    jp_candle,heikin_candle,symbol,interval,_precision = managerindicator.create_exchange(client_exchange,new_socket_infor)
-    await managerindicator.loop_watch_ohlcv(websocket,ws_exchange,jp_candle,heikin_candle,symbol,interval,_precision)
-
-    "add smooth and super smooth candle if they are activing"
-    managerindicator.add_new_candle(new_socket_infor,pre_active_canldes)
-    
-    "change input-all indicator"

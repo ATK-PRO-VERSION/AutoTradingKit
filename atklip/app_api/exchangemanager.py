@@ -29,12 +29,12 @@ class ExchangeManager:
     def get_client_exchange(self,id_exchange):
         return self.map_exchange[f"client-{id_exchange}"]
     
-    def remove_exchange(self,id_exchange:str):
+    async def remove_exchange(self,id_exchange:str):
         try:
-            asyncio.run(self.map_exchange[f"ws-{id_exchange}"].close())
-            self.map_exchange[f"client-{id_exchange}"].close()
             del self.map_exchange[f"ws-{id_exchange}"]
             del self.map_exchange[f"client-{id_exchange}"]
+            self.map_exchange[f"client-{id_exchange}"].close()
+            await self.map_exchange[f"ws-{id_exchange}"].close()
         except:
             pass
         
