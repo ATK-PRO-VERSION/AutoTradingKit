@@ -4,12 +4,20 @@ Thêm 1 số indicators PANDAS-TA
 
 https://pypi.org/project/celery/
 
-
 https://github.com/twopirllc/pandas-ta/pull/661/files#diff-45fcc49d657dcb2c763943b43322a3c91d2b054484f0d1e2d18388ae3124e714
 
 build Ta_lib
 https://github.com/cgohlke/talib-build/
 d:/AutoTradingKit/venv/Scripts/python.exe -3.12 -m pip install TA_Lib-0.4.32-cp312-cp312-win_amd64.whl
+
+
+#https://github.com/MagicStack/uvloop nhanh hơn
+
+#https://github.com/pyapp-kit/psygnal  signal-slot thay thế qt-signal-slot
+
+https://github.com/pyapp-kit/superqt
+
+
 
 Khi sử dụng lệnh `cythonize`, bạn có thể cung cấp nhiều tham số để tinh chỉnh quá trình biên dịch. Dưới đây là một số tham số phổ biến mà bạn có thể sử dụng:
 

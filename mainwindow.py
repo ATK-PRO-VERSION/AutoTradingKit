@@ -1,7 +1,9 @@
 from multiprocessing.spawn import freeze_support
 import sys
-from multiprocessing import Process
+from multiprocessing import Process, set_start_method
 import uvicorn
+import os
+import signal
 
 from atklip.gui.qfluentwidgets.common import setTheme,Theme
 from atklip.gui.qfluentwidgets.common.icon import *
@@ -11,19 +13,47 @@ from PySide6.QtCore import QCoreApplication,QSize
 from PySide6.QtGui import QCloseEvent,QIcon
 from PySide6.QtWidgets import QApplication
 
-global socket_process
-socket_process: Process
+# global socket_process, socket_process_pid
+# socket_process: Process
+# socket_process_pid: int
+HTTPProtocolType = Literal["auto", "h11", "httptools"]
+WSProtocolType = Literal["auto", "none", "websockets", "wsproto"]
+LifespanType = Literal["auto", "on", "off"]
+LoopSetupType = Literal["none", "auto", "asyncio", "uvloop"]
+InterfaceType = Literal["auto", "asgi3", "asgi2", "wsgi"]
+
+def start_server():
+    uvicorn.run("atklip.app_api:app", 
+                host="localhost", 
+                port=2022, 
+                loop="auto",
+                http="httptools",
+                ws="wsproto",
+                workers=1,
+                ws_max_queue=1000,
+                limit_max_requests=100000,
+                reload=False)
+
+def create_server():
+    # set_start_method("spawn")
+    _socket_process = Process(target=start_server) 
+    _socket_process.start()
+    process_pid = _socket_process.pid
+    return  _socket_process, process_pid
 
 class MainWindow(WindowBase):
     def __init__(self):
         self.isMicaEnabled = False
+        self.socket_process,self.socket_process_pid = create_server()
         super().__init__()
     
     def closeEvent(self, event: QCloseEvent) -> None:
         quit_msg = QCoreApplication.translate("MainWindow", u"To close window click button OK", None)   
         mgsBox = MessageBox("Quit Application?", quit_msg, self.window())
         if mgsBox.exec():
-            socket_process.terminate()
+            os.kill(self.socket_process_pid, signal.CTRL_BREAK_EVENT)
+            self.socket_process.terminate()
+            self.socket_process.join()
             self.close_window()
             self.deleteLater()
             event.accept()
@@ -48,20 +78,7 @@ def main():
     w.show()
     sys.exit(app.exec())
 
-def create_server():
-    _socket_process = Process(target=uvicorn.run, kwargs={
-                                                "app": "atklip.app_api:app", 
-                                                "host": "localhost",
-                                                "port": 2022,
-                                                "ws_max_queue":1000,
-                                                "limit_max_requests":100000,
-                                                "reload": False
-                                                }) #"workers": 2,# "reload":True
-    _socket_process.start()
-    return  _socket_process
-
 
 if __name__ == '__main__':
     freeze_support()
-    socket_process = create_server()
     main()

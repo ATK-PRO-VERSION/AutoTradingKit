@@ -1,60 +1,33 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from typing import List
+from PySide6.QtCore import QObject, Signal, Slot
 
-app = FastAPI()
+# Tạo một lớp kế thừa từ QObject
+class Worker(QObject):
+    # Khai báo một tín hiệu (Signal) nhận một giá trị int
+    task_completed = Signal(int)
 
-# Mô hình dữ liệu cơ bản (Pydantic model)
-class Item(BaseModel):
-    name: str
-    description: str = None
-    price: float
-    tax: float = None
+    def __init__(self):
+        super().__init__()
 
-# Database giả lập
-items = []
+    # Khai báo một slot để xử lý công việc
+    @Slot(int)
+    def perform_task(self, task_id):
+        print(f"Performing task {task_id}...")
+        # Sau khi hoàn thành, phát ra tín hiệu
+        self.task_completed.emit(task_id)
 
-# GET - Lấy danh sách tất cả các mục
-@app.get("/items/", response_model=List[Item])
-def get_items():
-    return items
+# Tạo một lớp khác để xử lý kết quả
+class ResultHandler(QObject):
+    @Slot(int)
+    def handle_result(self, task_id):
+        print(f"Task {task_id} completed!")
 
-# GET - Lấy một mục cụ thể theo ID
-@app.get("/items/{item_id}", response_model=Item)
-def get_item(item_id: int):
-    if item_id < 0 or item_id >= len(items):
-        raise HTTPException(status_code=404, detail="Item not found")
-    return items[item_id]
+if __name__ == "__main__":
+    # Tạo đối tượng Worker và ResultHandler
+    worker = Worker()
+    result_handler = ResultHandler()
 
-# POST - Tạo một mục mới
-@app.post("/items/", response_model=Item)
-def create_item(item: Item):
-    items.append(item)
-    return item
-# PUT - Cập nhật toàn bộ một mục theo ID
-@app.put("/items/{item_id}", response_model=Item)
-def update_item(item_id: int, updated_item: Item):
-    if item_id < 0 or item_id >= len(items):
-        raise HTTPException(status_code=404, detail="Item not found")
-    items[item_id] = updated_item
-    return updated_item
+    # Kết nối tín hiệu từ Worker với Slot của ResultHandler
+    worker.task_completed.connect(result_handler.handle_result)
 
-# PATCH - Cập nhật một phần thông tin của mục theo ID
-@app.patch("/items/{item_id}", response_model=Item)
-def patch_item(item_id: int, item: Item):
-    if item_id < 0 or item_id >= len(items):
-        raise HTTPException(status_code=404, detail="Item not found")
-    
-    # Cập nhật chỉ những trường được truyền vào
-    current_item = items[item_id]
-    updated_item = current_item.copy(update=item.dict(exclude_unset=True))
-    items[item_id] = updated_item
-    return updated_item
-
-# DELETE - Xóa một mục theo ID
-@app.delete("/items/{item_id}", response_model=Item)
-def delete_item(item_id: int):
-    if item_id < 0 or item_id >= len(items):
-        raise HTTPException(status_code=404, detail="Item not found")
-    return items.pop(item_id)
-
+    # Thực hiện tác vụ và xử lý kết quả
+    worker.perform_task(1)

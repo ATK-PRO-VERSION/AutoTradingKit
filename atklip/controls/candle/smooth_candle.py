@@ -49,25 +49,25 @@ class SMOOTH_CANDLE(QObject):
         self.df = pd.DataFrame([])
 
         self._candles.sig_update_source.connect(self.sig_update_source,Qt.ConnectionType.AutoConnection)
-        self._candles.sig_reset_all.connect(self.threadpool_asyncworker,Qt.ConnectionType.AutoConnection)
-        self._candles.sig_update_candle.connect(self.update_worker,Qt.ConnectionType.QueuedConnection)
-        self._candles.sig_add_candle.connect(self.update_worker,Qt.ConnectionType.QueuedConnection)
-        self._candles.sig_add_historic.connect(self.update_historic_worker,Qt.ConnectionType.QueuedConnection)
+        self._candles.sig_reset_all.connect(self.fisrt_gen_data,Qt.ConnectionType.AutoConnection)
+        self._candles.sig_update_candle.connect(self.update,Qt.ConnectionType.QueuedConnection)
+        self._candles.sig_add_candle.connect(self.update,Qt.ConnectionType.QueuedConnection)
+        self._candles.sig_add_historic.connect(self.gen_historic_data,Qt.ConnectionType.QueuedConnection)
 
     def connect_signals(self):
         self._candles.sig_update_source.connect(self.sig_update_source,Qt.ConnectionType.AutoConnection)
-        self._candles.sig_reset_all.connect(self.threadpool_asyncworker,Qt.ConnectionType.AutoConnection)
-        self._candles.sig_update_candle.connect(self.update_worker,Qt.ConnectionType.QueuedConnection)
-        self._candles.sig_add_candle.connect(self.update_worker,Qt.ConnectionType.QueuedConnection)
-        self._candles.sig_add_historic.connect(self.update_historic_worker,Qt.ConnectionType.QueuedConnection)
+        self._candles.sig_reset_all.connect(self.fisrt_gen_data,Qt.ConnectionType.AutoConnection)
+        self._candles.sig_update_candle.connect(self.update,Qt.ConnectionType.QueuedConnection)
+        self._candles.sig_add_candle.connect(self.update,Qt.ConnectionType.QueuedConnection)
+        self._candles.sig_add_historic.connect(self.gen_historic_data,Qt.ConnectionType.QueuedConnection)
     
     def disconnect_signals(self):
         try:
             self._candles.sig_update_source.disconnect(self.sig_update_source)
-            self._candles.sig_reset_all.disconnect(self.threadpool_asyncworker)
-            self._candles.sig_update_candle.disconnect(self.update_worker)
-            self._candles.sig_add_candle.disconnect(self.update_worker)
-            self._candles.sig_add_historic.disconnect(self.update_historic_worker)
+            self._candles.sig_reset_all.disconnect(self.fisrt_gen_data)
+            self._candles.sig_update_candle.disconnect(self.update)
+            self._candles.sig_add_candle.disconnect(self.update)
+            self._candles.sig_add_historic.disconnect(self.gen_historic_data)
         except:
             pass
     
@@ -388,14 +388,14 @@ class SMOOTH_CANDLE(QObject):
     
     def refresh_data(self,ma_type,ma_period,n_smooth_period):
         self.reset_parameters(ma_type,ma_period,n_smooth_period)
-        self.threadpool_asyncworker()
+        self.fisrt_gen_data()
     
     def reset_parameters(self,ma_type,ma_period,n_smooth_period = None):
         self.ma_type = ma_type
         self.period = ma_period
         # self.n = n_smooth_period    
     
-    
+    @Slot()
     def gen_historic_data(self,n_len):
         self.is_genering = True
                 
@@ -453,7 +453,7 @@ class SMOOTH_CANDLE(QObject):
         self.sig_add_historic.emit(n_len)
         return self.candles
     
-    
+    @Slot()
     def fisrt_gen_data(self):
         self.is_genering = True
         self.df = pd.DataFrame([])
@@ -507,7 +507,7 @@ class SMOOTH_CANDLE(QObject):
             self.is_genering = False
         self.sig_reset_all.emit()
         return self.candles
-    
+    @Slot()
     def update(self, _candle:List[OHLCV]):
         print("smoothcandle", _candle)
         if (self.first_gen == True) and (self.is_genering == False):

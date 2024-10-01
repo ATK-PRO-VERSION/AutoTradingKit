@@ -8,13 +8,17 @@ from .models import *
 from .ta_indicators import *
 from .ta_indicators import IndicatorType
 from .socketmanager import ConnectionManager
+from PySide6.QtCore import QObject,Signal,Slot
 
 
 class IndicatorManager:
     def __init__(self,managersocket) -> None:
         self.map_candle:Dict[str:Any] = {}
         self.map_indicator:Dict[str:Any] = {}
-        self.map_candle_indicator: Dict[str:list] = {}
+        
+        self.map_candle_indicator: Dict = {}
+        self.map_candle_smooth_candle : Dict= {}
+
         self.managersocket:ConnectionManager = managersocket
 
     def send_msg(self,data, websocket:WebSocket):    
@@ -53,7 +57,7 @@ class IndicatorManager:
     def create_exchange(self,crypto_ex,candle_infor:dict):
         symbol:str=candle_infor.get("symbol")
         interval:str=candle_infor.get("interval")
-        ma_type:IndicatorType=candle_infor.get("ma_type")
+        ma_type:str=candle_infor.get("ma_type")
         ma_leng:int=candle_infor.get("ma_leng")
         n_smooth:int=candle_infor.get("n_smooth")
         name:str=candle_infor.get("name")
@@ -74,18 +78,6 @@ class IndicatorManager:
         heikin_candle:HEIKINASHI = self.add_candle(candle_infor)
         heikin_candle.fisrt_gen_data()
         return jp_candle,heikin_candle,symbol,interval,_precision
-
-
-    def add_new_candle(self,candle_infor:dict,pre_active_candles:dict):
-        if pre_active_candles["smoothcandle"] == True:
-            candle_infor["name"] = "smoothcandle"
-            smoothcandle:SMOOTH_CANDLE = self.add_candle(candle_infor)
-            smoothcandle.fisrt_gen_data()
-        
-        if pre_active_candles["supersmoothcandle"] == True:
-            candle_infor["name"] = "supersmoothcandle"
-            supersmoothcandle:N_SMOOTH_CANDLE = self.add_candle(candle_infor)
-            supersmoothcandle.fisrt_gen_data()
         
 
     async def loop_watch_ohlcv(self,websocket:WebSocket,crypto_ex_ws,jp_candle:JAPAN_CANDLE,heikin_candle:HEIKINASHI,symbol,interval,_precision):
@@ -140,29 +132,36 @@ class IndicatorManager:
         ta_id = ""
         ta_param = ""
         dict_ta_params = {}
+        _candles:JAPAN_CANDLE|HEIKINASHI|SMOOTH_CANDLE|N_SMOOTH_CANDLE = self.map_candle.get(source_name)
+        if _candles == None:
+            return None
         if ta_name == "zigzag":
             legs:str = ta_infor.get("legs")
             deviation:str = ta_infor.get("deviation")
             ta_param = f"{ta_name}-{legs}-{deviation}"
-            dict_ta_params = {"name":ta_name,"legs":legs,"deviation":deviation}
+            dict_ta_params = {"source_name":source_name,"name":ta_name,"legs":legs,"deviation":deviation}
             ta_id = f"{source_name}-{ta_param}"
             indicator = ZIGZAG(parent= None,
-                    _candles= self.map_candle[source_name],
+                    _candles= _candles,
                     dict_ta_params=dict_ta_params)
             indicator.started_worker()
-        list_indicator = self.map_candle_indicator.get(source_name,[])
-        if list_indicator == []:
-            self.map_candle_indicator[source_name] = [dict_ta_params]
-        else:
-            self.map_candle_indicator[source_name].append(dict_ta_params)
         
-        indicator.indicator_name = ta_param
-        indicator.dict_ta_params = dict_ta_params
+        if indicator != None:
+            indicator.indicator_name = ta_param
+            indicator.dict_ta_params = dict_ta_params
+            
+            old_indicator = self.map_indicator.get(ta_id,None)
+            if old_indicator != None:
+                old_indicator.deleteLater()
+            self.map_indicator[ta_id] = indicator
+
+            list_indicator = self.map_candle_indicator.get(_candles,[])
+            
+            if list_indicator == []:
+                self.map_candle_indicator[_candles] = [indicator]
+            else:
+                self.map_candle_indicator[_candles].append(indicator)
         
-        old_indicator = self.map_indicator.get(ta_id,None)
-        if old_indicator != None:
-            old_indicator.deleteLater()
-        self.map_indicator[ta_id] = indicator
         return indicator
     
     def get_indicator(self,ta_infor: dict):
@@ -187,53 +186,76 @@ class IndicatorManager:
         id_exchange = candle_infor.get("id_exchange")
         symbol:str=candle_infor.get("symbol")
         interval:str=candle_infor.get("interval")
-        ma_type:IndicatorType=candle_infor.get("ma_type")
+        ma_type:str=candle_infor.get("ma_type")
         ma_leng:int=candle_infor.get("ma_leng")
         n_smooth:int=candle_infor.get("n_smooth")
         name:str=candle_infor.get("name")
         source:str=candle_infor.get("source")
         precicion:float=candle_infor.get("precicion") 
         source_name = ""
-        candle = None
+        candle:SMOOTH_CANDLE|N_SMOOTH_CANDLE = None
         jp_name = f"{id_exchange}-japancandle-{symbol}-{interval}"
         heikin_name = f"{id_exchange}-heikinashi-{symbol}-{interval}"
+        _candles:JAPAN_CANDLE|HEIKINASHI = None
         if name == "smoothcandle":
             source_name = f"{id_exchange}-{source}-{name}-{symbol}-{interval}-{ma_type}"
             if source == "japan":
+                _candles = self.map_candle[jp_name]
                 candle = self.map_candle[source_name] = SMOOTH_CANDLE(precicion,
-                                                                    self.map_candle[jp_name],
+                                                                    _candles,
                                                                     ma_type,
                                                                     ma_leng)
             else:
+                _candles = self.map_candle[heikin_name]
                 candle = self.map_candle[source_name] = SMOOTH_CANDLE(precicion,
-                                                                    self.map_candle[heikin_name],
+                                                                    _candles,
                                                                     ma_type,
                                                                     ma_leng)
+            
+            list_candle = self.map_candle_smooth_candle.get(_candles,[])
+            
+            if list_candle == []:
+                self.map_candle_smooth_candle[_candles] = [candle]
+            else:
+                self.map_candle_smooth_candle[_candles].append(candle)
+            
         elif name == "japancandle":
-            source_name = f"{id_exchange}-{name}-{symbol}-{interval}"
-            candle = self.map_candle[source_name] = JAPAN_CANDLE()
+            candle = self.map_candle[jp_name] = JAPAN_CANDLE()
         elif name == "supersmoothcandle":
             source_name = f"{id_exchange}-{source}-{name}-{symbol}-{interval}-{ma_type}-{ma_leng}-{n_smooth}"
             if source == "japan":
+                _candles = self.map_candle[jp_name]
                 candle = self.map_candle[source_name] = N_SMOOTH_CANDLE(precicion,
-                                                                        self.map_candle[jp_name],
+                                                                        _candles,
                                                                         n_smooth,
                                                                         ma_type,
                                                                         ma_leng)
             else:
+                _candles = self.map_candle[heikin_name]
                 candle = self.map_candle[source_name] = N_SMOOTH_CANDLE(precicion,
-                                                                        self.map_candle[heikin_name],
+                                                                        _candles,
                                                                         ma_type,
                                                                         ma_leng)
+            
+            list_candle = self.map_candle_smooth_candle.get(_candles,[])
+            
+            if list_candle == []:
+                self.map_candle_smooth_candle[_candles] = [candle]
+            else:
+                self.map_candle_smooth_candle[_candles].append(candle)
+            
         elif name == "heikinashi":
-            source_name = f"{id_exchange}-{name}-{symbol}-{interval}"
-            candle = self.map_candle[source_name] = HEIKINASHI(precicion,self.map_candle[jp_name])
+            candle = self.map_candle[heikin_name] = HEIKINASHI(precicion,self.map_candle[jp_name])
+        
         if candle != None:
             candle.source_name = source_name
         return candle
     
-    def get_list_indicator_of_candle(self,source_name):
-        return self.map_candle_indicator.get(source_name,[])
+    def get_list_indicator_of_candle(self,candle:JAPAN_CANDLE|HEIKINASHI|SMOOTH_CANDLE|N_SMOOTH_CANDLE):
+        return self.map_candle_indicator.get(candle,[])
+    
+    def get_list_smooth_of_candle(self,candle:JAPAN_CANDLE|HEIKINASHI):
+        return self.map_candle_smooth_candle.get(candle,[])
     
     def clear_old_map_candle_indicator(self,old_source_name):
         list_indicator_param = self.get_list_indicator_of_candle(old_source_name)
@@ -264,7 +286,7 @@ class IndicatorManager:
         id_exchange = candle_infor.get("id_exchange")
         symbol:str=candle_infor.get("symbol")
         interval:str=candle_infor.get("interval")
-        ma_type:IndicatorType=candle_infor.get("ma_type")
+        ma_type:str=candle_infor.get("ma_type")
         ma_leng:int=candle_infor.get("ma_leng")
         n_smooth:int=candle_infor.get("n_smooth")
         name:str=candle_infor.get("name")
@@ -292,7 +314,7 @@ class IndicatorManager:
         id_exchange = candle_infor.get("id_exchange")
         symbol:str=candle_infor.get("symbol")
         interval:str=candle_infor.get("interval")
-        ma_type:IndicatorType=candle_infor.get("ma_type")
+        ma_type:str=candle_infor.get("ma_type")
         ma_leng:int=candle_infor.get("ma_leng")
         n_smooth:int=candle_infor.get("n_smooth")
         name:str=candle_infor.get("name")

@@ -1,38 +1,36 @@
 import sys
-from PySide6.QtCore import QProcess
-from PySide6.QtWidgets import QApplication, QPushButton, QVBoxLayout, QWidget
+from fastapi import FastAPI
+from PySide6.QtCore import QObject, Signal
+from qasync import QEventLoop, asyncSlot,QApplication
+import asyncio
 
-class MyApp(QWidget):
-    def __init__(self):
-        super().__init__()
+app = FastAPI()
 
-        # Tạo QProcess
-        self.process = QProcess(self)
+class Worker(QObject):
+    task_completed = Signal(int)
 
-        # Tạo giao diện đơn giản với một nút bấm
-        self.button = QPushButton("Run Python Script")
-        self.button.clicked.connect(self.run_script)
+    @asyncSlot(int)
+    async def perform_task(self, task_id):
+        # Giả lập một tác vụ bất đồng bộ
+        await asyncio.sleep(1)
+        print(f"Task {task_id} performed")
+        self.task_completed.emit(task_id)
 
-        # Layout cho giao diện
-        layout = QVBoxLayout()
-        layout.addWidget(self.button)
-        self.setLayout(layout)
+worker = Worker()
 
-    def run_script(self):
-        # Chạy script Python trong một tiến trình riêng biệt
-        self.process.start("uvicorn", ["test_.py", "--workers"])
+@worker.task_completed.connect
+def on_task_completed(task_id):
+    print(f"Task {task_id} completed!")
 
-        # Kết nối tín hiệu khi có dữ liệu output
-        self.process.readyReadStandardOutput.connect(self.handle_stdout)
+@app.get("/task/{task_id}")
+async def start_task(task_id: int):
+    asyncio.create_task(worker.perform_task(task_id))
+    return {"message": f"Task {task_id} started"}
 
-    def handle_stdout(self):
-        # Đọc output từ script và hiển thị
-        output = self.process.readAllStandardOutput().data().decode()
-        print(output)
-
-# Khởi tạo ứng dụng PySide6
 if __name__ == "__main__":
+    import uvicorn
     app = QApplication(sys.argv)
-    window = MyApp()
-    window.show()
-    sys.exit(app.exec())
+    loop = QEventLoop(app)
+
+    asyncio.set_event_loop(loop)
+    uvicorn.run(app, host="127.0.0.1", port=8000, loop=loop)

@@ -10,20 +10,25 @@ import sys
 import asyncio
 import concurrent.futures
 
-def _create_server():
-        thread = multiprocessing.Process(target=uvicorn.run, kwargs={
-                                                    "app": "atklip.app_api:app", 
-                                                    "host": "localhost",
-                                                    "port": 2022,
-                                                    "ws_max_queue":1000,
-                                                    "limit_max_requests":100000,
-                                                    "reload": True
-                                                    })
-        thread.start()
-        # thread.terminate()
-
+def start_server():
+    uvicorn.run("atklip.app_api:app", 
+                host="localhost", 
+                port=2022, 
+                loop="auto",
+                http="httptools",
+                ws="wsproto",
+                workers=1,
+                ws_max_queue=1000,
+                limit_max_requests=100000,
+                reload=False)
+def create_server():
+        multiprocessing.set_start_method("spawn")
+        _socket_process = Process(target=start_server) 
+        _socket_process.start()
+        process_pid = _socket_process.pid
+        return  _socket_process, process_pid
 
 
 if __name__ == '__main__':
     freeze_support()
-    _create_server()
+    socket_process,socket_process_pid = create_server()

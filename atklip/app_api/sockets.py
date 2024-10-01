@@ -2,6 +2,7 @@ import asyncio
 from fastapi import FastAPI, Request, WebSocketDisconnect
 from ccxt import NetworkError
 from fastapi import FastAPI, WebSocket
+from PySide6.QtCore import QObject,Signal,Slot
 from .models import *
 from .ta_indicators import *
 from .exchangemanager import ExchangeManager
@@ -56,6 +57,7 @@ async def add_candle(request: Request):
     candle_infor = await request.json()
     candle = managerindicator.add_candle(candle_infor)
     candle.fisrt_gen_data()
+    return {"result": "Done"}
 
 @app.get("/add-indicator")
 async def add_indicator(request: Request):
