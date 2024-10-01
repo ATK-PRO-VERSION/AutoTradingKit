@@ -25,13 +25,13 @@ from psygnal import Signal
 class MyEmitter:
     changed = Signal(int,float)
 
-
-def receiver(arg1: int,agr2:int):
-    print("new value:", arg1,agr2)
+class Rrceiver:
+    def receiver(arg1: int,agr2:int):
+        print("new value:", arg1,agr2)
 
 
 emitter = MyEmitter()
-emitter.changed.connect(receiver)
+emitter.changed.connect(Rrceiver.receiver)
 emitter.changed.emit(1,3)  # prints 'new value: 1'
 
 from psygnal import Signal, throttled
