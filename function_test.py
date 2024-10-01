@@ -1,38 +1,51 @@
-import sys
-from PySide6.QtCore import QProcess
-from PySide6.QtWidgets import QApplication, QPushButton, QVBoxLayout, QWidget
+from psygnal import evented
+from dataclasses import dataclass
 
-class MyApp(QWidget):
-    def __init__(self):
-        super().__init__()
+@evented
+@dataclass
+class Person:
+    name: str
+    age: int = 0
 
-        # Tạo QProcess
-        self.process = QProcess(self)
+person = Person('John', age=30)
 
-        # Tạo giao diện đơn giản với một nút bấm
-        self.button = QPushButton("Run Python Script")
-        self.button.clicked.connect(self.run_script)
+# connect callbacks
+@person.events.age.connect
+def _on_age_change(new_age: str):
+    print(f"Age changed to {new_age}")
 
-        # Layout cho giao diện
-        layout = QVBoxLayout()
-        layout.addWidget(self.button)
-        self.setLayout(layout)
+person.age = 31  # prints: Age changed to 31
+person.age = 32  # prints: Age changed to 31
+person.age = 33  # prints: Age changed to 31
+person.age = 34  # prints: Age changed to 31
 
-    def run_script(self):
-        # Chạy script Python trong một tiến trình riêng biệt
-        self.process.start("uvicorn", ["test_.py", "--workers"])
+from psygnal import Signal
 
-        # Kết nối tín hiệu khi có dữ liệu output
-        self.process.readyReadStandardOutput.connect(self.handle_stdout)
 
-    def handle_stdout(self):
-        # Đọc output từ script và hiển thị
-        output = self.process.readAllStandardOutput().data().decode()
-        print(output)
+class MyEmitter:
+    changed = Signal(int,float)
 
-# Khởi tạo ứng dụng PySide6
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = MyApp()
-    window.show()
-    sys.exit(app.exec())
+
+def receiver(arg1: int,agr2:int):
+    print("new value:", arg1,agr2)
+
+
+emitter = MyEmitter()
+emitter.changed.connect(receiver)
+emitter.changed.emit(1,3)  # prints 'new value: 1'
+
+from psygnal import Signal, throttled
+
+class MyEmitter:
+    changed = Signal(int)
+
+def on_change(val: int):
+    # do something possibly expensive
+    print(val)
+
+emitter = MyEmitter()
+
+# connect the `on_change` whenever `emitter.changed` is emitted
+# BUT, no more than once every 50 milliseconds
+emitter.changed.connect(throttled(on_change, timeout=50))
+emitter.changed.emit(123)
