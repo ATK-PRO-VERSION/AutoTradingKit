@@ -39,7 +39,7 @@ class ViewPlotWidget(PlotWidget):
     sig_show_process = Signal(bool)
     sig_change_tab_infor = Signal(tuple)
     sig_goto_date = Signal(tuple)
-    sig_change_candle_type = Signal(str)
+    sig_change_market_type = Signal(str)
     "signal from TopBar"
     sig_add_item = Signal(object)
     sig_remove_item = Signal(object)

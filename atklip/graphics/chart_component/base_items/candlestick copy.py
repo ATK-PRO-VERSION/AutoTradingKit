@@ -121,7 +121,7 @@ class CandleStick(GraphicsObject):
         self.chart.update_sources(self.source)
         self.sig_change_indicator_name.emit(self.has["name"])
         
-        self.first_setup_candle()
+        self.first_setup_market()
     
     def update_inputs(self,_input,_source):
         """"source":self.source,
@@ -250,7 +250,7 @@ class CandleStick(GraphicsObject):
         self.historic_candle.price_line.update_data(self.source.candles[-2:])
         self.historic_candle.threadpool_asyncworker(self.source.candles[-2:])
     
-    def first_setup_candle(self):
+    def first_setup_market(self):
         x_data, y_data = self.source.get_index_data(stop=-1)
         self.setData((x_data, y_data))
       

@@ -13,7 +13,7 @@ import warnings
 from collections import OrderedDict
 
 import numpy as np
-
+import PySide6.QtAsyncio as QtAsyncio
 from PySide6 import QtCore, QtGui
 from PySide6.QtCore import Qt
 
@@ -38,6 +38,10 @@ SI_PREFIX_EXPONENTS['u'] = -6
 
 FLOAT_REGEX = re.compile(r'(?P<number>[+-]?((((\d+(\.\d*)?)|(\d*\.\d+))([eE][+-]?\d+)?)|((?i:nan)|(inf))))\s*((?P<siPrefix>[u' + SI_PREFIXES + r']?)(?P<suffix>\w.*))?$')
 INT_REGEX = re.compile(r'(?P<number>[+-]?\d+)\s*(?P<siPrefix>[u' + SI_PREFIXES + r']?)(?P<suffix>.*)$')
+
+
+def run_async_function(func,*args,**kwargs):
+    QtAsyncio.run(func(*args,**kwargs))
 
 
 def siScale(x, minVal=1e-25, allowUnicode=True):

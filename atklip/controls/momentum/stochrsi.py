@@ -110,58 +110,96 @@ def stochrsi(
 import numpy as np
 import pandas as pd
 from typing import List
-from PySide6.QtCore import Qt, Signal,QObject
-
+from psygnal import Signal
 from atklip.controls.ma_type import PD_MAType
 from atklip.controls.ohlcv import   OHLCV
 from atklip.controls.candle import JAPAN_CANDLE,HEIKINASHI,SMOOTH_CANDLE,N_SMOOTH_CANDLE
-from atklip.appmanager import CandleWorker
+from atklip.app_api.workers import ApiThreadPool
 
-class STOCHRSI(QObject):
+class STOCHRSI():
     sig_update_candle = Signal()
     sig_add_candle = Signal()
     sig_reset_all = Signal()
     signal_delete = Signal()   
     sig_add_historic = Signal()  
-    def __init__(self,parent,_candles,source,rsi_period,period,k_period,d_period,ma_type) -> None:
-        super().__init__(parent=parent)
+    def __init__(self,_candles,dict_ta_params) -> None:
         
         self._candles: JAPAN_CANDLE|HEIKINASHI|SMOOTH_CANDLE|N_SMOOTH_CANDLE =_candles
         
-        self.rsi_period :int = rsi_period
-        self.period:int = period
-        self.k_period:int = k_period
-        self.d_period:int = d_period
-        self.source:str = source
-        self.ma_type:PD_MAType = ma_type
+        self.rsi_period :int = dict_ta_params["rsi_period"]
+        self.period:int = dict_ta_params["period"]
+        self.k_period:int = dict_ta_params["k_period"]
+        self.d_period:int = dict_ta_params["d_period"]
+        self.source:str = dict_ta_params["source"]
+        self.ma_type:str = dict_ta_params["ma_type"]
+        self.offset :int=dict_ta_params.get("offset",0)
 
-        # self.signal_delete.connect(self.deleteLater)
         self.first_gen = False
         self.is_genering = True
-        
-        self.name = f"STOCHRSI {self.source} {self.rsi_period} {self.period} {self.k_period} {self.d_period} {self.ma_type.name.lower()}"
+        self.is_current_update = False
+        self.is_histocric_load = False
+        self.name = f"STOCHRSI {self.source} {self.rsi_period} {self.period} {self.k_period} {self.d_period} {self.ma_type.lower()}"
 
         self.df = pd.DataFrame([])
+        self.worker = ApiThreadPool
         
-        self.xdata,self.stochrsi_ , self.signalma = np.array([]),np.array([]),np.array([])
+        self.xdata,self.stochrsi_ , self.signalma = [],[],[]
 
         self.connect_signals()
+    
+    @property
+    def source_name(self)-> str:
+        return self._source_name
+    @source_name.setter
+    def source_name(self,source_name):
+        self._source_name = source_name
+    
+    def change_input(self,candles=None,dict_ta_params: dict={}):
+        if candles != None:
+            self.disconnect_signals()
+            self._candles : JAPAN_CANDLE|HEIKINASHI|SMOOTH_CANDLE|N_SMOOTH_CANDLE= candles
+            self.connect_signals()
         
+        if dict_ta_params != {}:
+            self.rsi_period :int = dict_ta_params["rsi_period"]
+            self.period:int = dict_ta_params["period"]
+            self.k_period:int = dict_ta_params["k_period"]
+            self.d_period:int = dict_ta_params["d_period"]
+            self.source:str = dict_ta_params["source"]
+            self.ma_type:str = dict_ta_params["ma_type"]
+            self.offset :int=dict_ta_params.get("offset",0)
+            
+            
+            ta_name:str=dict_ta_params.get("ta_name")
+            obj_id:str=dict_ta_params.get("obj_id") 
+            
+            ta_param = f"{obj_id}-{ta_name}-{self.source}-{self.ma_type}-{self.rsi_period}-{self.period}-{self.k_period}-{self.d_period}"
+
+            self.indicator_name = ta_param
+            
+        self.first_gen = False
+        self.is_genering = True
+        self.is_current_update = False
+        
+        self.started_worker()
+    
+      
     def disconnect_signals(self):
         try:
             self._candles.sig_reset_all.disconnect(self.started_worker)
             self._candles.sig_update_candle.disconnect(self.update_worker)
             self._candles.sig_add_candle.disconnect(self.add_worker)
             self._candles.signal_delete.disconnect(self.signal_delete)
+            self._candles.sig_add_historic.disconnect(self.add_historic_worker)
         except RuntimeError:
                     pass
     
     def connect_signals(self):
-        self._candles.sig_reset_all.connect(self.started_worker,Qt.ConnectionType.AutoConnection)
-        self._candles.sig_update_candle.connect(self.update_worker,Qt.ConnectionType.QueuedConnection)
-        self._candles.sig_add_candle.connect(self.add_worker,Qt.ConnectionType.QueuedConnection)
+        self._candles.sig_reset_all.connect(self.started_worker)
+        self._candles.sig_update_candle.connect(self.update_worker)
+        self._candles.sig_add_candle.connect(self.add_worker)
         self._candles.signal_delete.connect(self.signal_delete)
-        self._candles.sig_add_historic.connect(self.add_historic_worker,Qt.ConnectionType.QueuedConnection)
+        self._candles.sig_add_historic.connect(self.add_historic_worker)
     
     
     def change_source(self,_candles:JAPAN_CANDLE|HEIKINASHI|SMOOTH_CANDLE|N_SMOOTH_CANDLE):
@@ -169,33 +207,6 @@ class STOCHRSI(QObject):
         self._candles =_candles
         self.connect_signals()
         self.started_worker()
-    
-    def change_inputs(self,_input:str,_source:str|int|JAPAN_CANDLE|HEIKINASHI|SMOOTH_CANDLE|N_SMOOTH_CANDLE|PD_MAType):
-        is_update = False
-        print(_input,_source)
-        if _input == "source":
-            self.change_source(_source)
-            return
-        elif _input == "period":
-            self.period = _source
-            is_update = True
-        elif _input == "rsi_period":
-            self.rsi_period = _source
-            is_update = True
-        elif _input == "d_period":
-            self.d_period = _source
-            is_update = True
-        elif _input == "k_period":
-            self.k_period = _source
-            is_update = True
-        elif _input == "type":
-            self.source = _source
-            is_update = True
-        elif _input == "ma_type":
-            self.ma_type = _source
-            is_update = True
-        if is_update:
-            self.started_worker()
     
     @property
     def indicator_name(self):
@@ -209,31 +220,38 @@ class STOCHRSI(QObject):
             return self.df
         return self.df.tail(n)
     
-    def get_data(self):
-        return self.xdata,self.stochrsi_,self.signalma
+    def get_data(self,start:int=0,stop:int=0):
+        if self.xdata == []:
+            return {"x_data":[],"stochrsi":[],"signalma":[]}
+        if start == 0 and stop == 0:
+            x_data = self.xdata
+            stochrsi_,signalma =self.stochrsi_,self.signalma
+        elif start == 0 and stop != 0:
+            x_data = self.xdata[:stop]
+            stochrsi_,signalma=self.stochrsi_[:stop],self.signalma[:stop]
+        elif start != 0 and stop == 0:
+            x_data = self.xdata[start:]
+            stochrsi_,signalma=self.stochrsi_[start:],self.signalma[start:]
+        else:
+            x_data = self.xdata[start:stop]
+            stochrsi_,signalma=self.stochrsi_[start:stop],self.signalma[start:stop]
+        return {"x_data":x_data,"stochrsi":stochrsi_,"signalma":signalma}
+    
     
     def get_last_row_df(self):
         return self.df.iloc[-1] 
 
     def update_worker(self,candle):
-        self.worker_ = None
-        self.worker_ = CandleWorker(self.update,candle)
-        self.worker_.start()
-    
+        self.worker.submit(self.update(candle))
+
     def add_worker(self,candle):
-        self.worker_ = None
-        self.worker_ = CandleWorker(self.add,candle)
-        self.worker_.start()
+        self.worker.submit(self.add(candle))
     
     def add_historic_worker(self,n):
-        self.worker_ = None
-        self.worker_ = CandleWorker(self.add_historic,n)
-        self.worker_.start()
-    
+        self.worker.submit(self.add_historic(n))
+
     def started_worker(self):
-        self.worker = None
-        self.worker = CandleWorker(self.fisrt_gen_data)
-        self.worker.start()
+        self.worker.submit(self.fisrt_gen_data())
     
     def paire_data(self,INDICATOR:pd.DataFrame|pd.Series):
         column_names = INDICATOR.columns.tolist()
@@ -245,8 +263,8 @@ class STOCHRSI(QObject):
             elif name.__contains__("STOCHRSId"):
                 signalma_name = name
 
-        stochrsi_ = INDICATOR[stochrsi_name].dropna()
-        signalma = INDICATOR[signalma_name].dropna()
+        stochrsi_ = INDICATOR[stochrsi_name].dropna().round(4)
+        signalma = INDICATOR[signalma_name].dropna().round(4)
         return stochrsi_,signalma
     
     def caculate(self,df: pd.DataFrame):
@@ -255,29 +273,31 @@ class STOCHRSI(QObject):
                             rsi_length=self.rsi_period,
                             k = self.k_period,
                             d = self.d_period,
-                            mamode=self.ma_type.name.lower()).dropna()
+                            mamode=self.ma_type.lower(),
+                            offset=self.offset).dropna().round(4)
         return self.paire_data(INDICATOR)
     
     def fisrt_gen_data(self):
+        self.is_current_update = False
         self.is_genering = True
         self.df = pd.DataFrame([])
         
         df:pd.DataFrame = self._candles.get_df()
         
-        stoch_, signalma = self.caculate(df)
+        stochrsi_, signalma = self.caculate(df)
         
-        _len = min([len(stoch_),len(signalma)])
+        _len = min([len(stochrsi_),len(signalma)])
         _index = df["index"].tail(_len)
 
         self.df = pd.DataFrame({
                             'index':_index,
-                            "stochrsi":stoch_.tail(_len),
+                            "stochrsi":stochrsi_.tail(_len),
                             "signalma":signalma.tail(_len)
                             })
                 
-        self.xdata,self.stochrsi_, self.signalma = self.df["index"].to_numpy(),\
-                                                self.df["stochrsi"].to_numpy(),\
-                                                self.df["signalma"].to_numpy()
+        self.xdata,self.stochrsi_, self.signalma = self.df["index"].to_list(),\
+                                                self.df["stochrsi"].to_list(),\
+                                                self.df["signalma"].to_list()
         
         self.is_genering = False
         if self.first_gen == False:
@@ -288,66 +308,75 @@ class STOCHRSI(QObject):
     
     def add_historic(self,n:int):
         self.is_genering = True
+        self.is_histocric_load = False
         _pre_len = len(self.df)
         df:pd.DataFrame = self._candles.get_df().iloc[:-1*_pre_len]
         
         
-        stoch_, signalma = self.caculate(df)
+        stochrsi_, signalma = self.caculate(df)
         
-        _len = min([len(stoch_),len(signalma)])
+        _len = min([len(stochrsi_),len(signalma)])
         _index = df["index"].tail(_len)
 
         _df = pd.DataFrame({
                             'index':_index,
-                            "stochrsi":stoch_.tail(_len),
+                            "stochrsi":stochrsi_.tail(_len),
                             "signalma":signalma.tail(_len)
                             })
 
         self.df = pd.concat([_df,self.df],ignore_index=True)
         
-        self.xdata,self.stochrsi_, self.signalma = self.df["index"].to_numpy(),\
-                                                self.df["stochrsi"].to_numpy(),\
-                                                self.df["signalma"].to_numpy()
+        self.xdata = _df["index"].to_list() + self.xdata
+        self.stochrsi_ = _df["stochrsi"].to_list() + self.stochrsi_
+        self.signalma = _df["signalma"].to_list() + self.signalma
+        
+        # self.xdata,self.stochrsi_, self.signalma = self.df["index"].to_list(),\
+        #                                         self.df["stochrsi"].to_list(),\
+        #                                         self.df["signalma"].to_list()
         
 
         self.is_genering = False
         if self.first_gen == False:
             self.first_gen = True
             self.is_genering = False
-        
+        self.is_histocric_load = True
         self.sig_add_historic.emit()
     
     def add(self,new_candles:List[OHLCV]):
         new_candle:OHLCV = new_candles[-1]
+        self.is_current_update = False
         if (self.first_gen == True) and (self.is_genering == False):
             df:pd.DataFrame = self._candles.get_df(self.rsi_period*5)
                     
-            stoch_, signalma = self.caculate(df)
+            stochrsi_, signalma = self.caculate(df)
             
             new_frame = pd.DataFrame({
                                     'index':[new_candle.index],
-                                    "stochrsi":[stoch_.iloc[-1]],
+                                    "stochrsi":[stochrsi_.iloc[-1]],
                                     "signalma":[signalma.iloc[-1]]
                                     })
             
             self.df = pd.concat([self.df,new_frame],ignore_index=True)
             
-            self.xdata,self.stochrsi_, self.signalma  = self.df["index"].to_numpy(),\
-                                                    self.df["stochrsi"].to_numpy(),\
-                                                    self.df["signalma"].to_numpy()
+            self.xdata,self.stochrsi_, self.signalma  = self.df["index"].to_list(),\
+                                                    self.df["stochrsi"].to_list(),\
+                                                    self.df["signalma"].to_list()
                                             
             self.sig_add_candle.emit()
+            self.is_current_update = True
         
     def update(self, new_candles:List[OHLCV]):
         new_candle:OHLCV = new_candles[-1]
+        self.is_current_update = False
         if (self.first_gen == True) and (self.is_genering == False):
             df:pd.DataFrame = self._candles.get_df(self.rsi_period*5)
                     
-            stoch_, signalma = self.caculate(df)
+            stochrsi_, signalma = self.caculate(df)
                     
-            self.df.iloc[-1] = [new_candle.index,stoch_.iloc[-1],signalma.iloc[-1]]
+            self.df.iloc[-1] = [new_candle.index,stochrsi_.iloc[-1],signalma.iloc[-1]]
                     
-            self.xdata,self.stochrsi_, self.signalma  = self.df["index"].to_numpy(),\
-                                                    self.df["stochrsi"].to_numpy(),\
-                                                    self.df["signalma"].to_numpy()
+            self.xdata,self.stochrsi_, self.signalma  = self.df["index"].to_list(),\
+                                                    self.df["stochrsi"].to_list(),\
+                                                    self.df["signalma"].to_list()
             self.sig_update_candle.emit()
+            self.is_current_update = True

@@ -105,7 +105,10 @@ class BasicTSI(GraphicsObject):
         
         self.chart.sig_update_source.connect(self.change_source,Qt.ConnectionType.AutoConnection)   
         self.signal_delete.connect(self.delete)
-    
+        self.object_id = self.chart.objmanager.add(self)
+    @property
+    def id(self):
+        return self.object_id
     def disconnect_signals(self):
         try:
             self.Indicator.sig_reset_all.disconnect(self.reset_threadpool_asyncworker)

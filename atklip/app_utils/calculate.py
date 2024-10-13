@@ -10,7 +10,7 @@ import numpy as np
 def round_(v):
     return np.floor(v+0.5)
 
-def convert_precicion(number):
+def convert_precision(number):
     if number >= 1:
         return int(number)
     number = f"{number}"
@@ -19,25 +19,6 @@ def convert_precicion(number):
     decimal_part = number.split('.')[1]  
     return len(decimal_part)
 
-def getspecialvalues(_type,last_candle:List):
-    if _type == "close":
-        return last_candle[-1].index, last_candle[-1].close
-    elif _type == "open":
-        return  last_candle[-1].index, last_candle[-1].open
-    elif _type == "high":
-        return  last_candle[-1].index, last_candle[-1].high
-    elif _type == "low":
-        return last_candle[-1].index, last_candle[-1].low
-    elif _type == "hl2":
-        return last_candle[-1].index, last_candle[-1].hl2
-    elif _type == "hlc3":
-        return last_candle[-1].index, last_candle[-1].hlc3
-    elif _type == "ohlc4":
-        return last_candle[-1].index, last_candle[-1].ohlc4
-    elif _type == "volume":
-        return last_candle[-1].index, last_candle[-1].volume
-    else:
-        return None,None
 def mouse_clicked(vb, ev):
     if ev.button() == 8: # back
         vb.pan_x(percent=-30)

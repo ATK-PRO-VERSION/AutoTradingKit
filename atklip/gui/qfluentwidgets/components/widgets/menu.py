@@ -7,7 +7,7 @@ from PySide6.QtCore import (QEasingCurve, QEvent, QPropertyAnimation, QObject, Q
                           Qt, QSize, QRectF, Signal, QPoint, QTimer, QObject, QParallelAnimationGroup)
 from PySide6.QtGui import (QAction, QIcon, QColor, QPainter, QPen, QPixmap, QRegion, QCursor, QTextCursor, QHoverEvent,
                            QFontMetrics, QKeySequence)
-from PySide6.QtWidgets import (QApplication, QMenu, QProxyStyle, QStyle,
+from PySide6.QtWidgets import (QApplication, QMenu, QProxyStyle, QStyle, QStyleFactory,
                                QGraphicsDropShadowEffect, QListWidget, QWidget, QHBoxLayout,
                                QListWidgetItem, QLineEdit, QTextEdit, QStyledItemDelegate, QStyleOptionViewItem, QLabel)
 
@@ -169,7 +169,7 @@ class MenuActionListWidget(QListWidget):
         self._itemHeight = 28
         self._maxVisibleItems = -1  # adjust visible items according to the size of screen
 
-        self.setViewportMargins(0, 0, 0, 0)
+        self.setViewportMargins(0, 6, 0, 6)
         self.setTextElideMode(Qt.ElideNone)
         self.setDragEnabled(False)
         self.setMouseTracking(True)
@@ -209,8 +209,9 @@ class MenuActionListWidget(QListWidget):
 
         # adjust the height of viewport
         w, h = MenuAnimationManager.make(self, aniType).availableViewSize(pos)
-        r = self.viewport().childrenRect()
-        self.viewport().resize(r.size())
+
+        # fixes https://github.com/zhiyiYo/PyQt-Fluent-Widgets/issues/844
+        # self.viewport().adjustSize()
 
         # adjust the height of list widget
         m = self.viewportMargins()
@@ -280,7 +281,6 @@ class RoundMenu(QMenu):
         self.itemHeight = 28
 
         self.hBoxLayout = QHBoxLayout(self)
-        self.hBoxLayout.setContentsMargins(0,0,0,0)
         self.view = MenuActionListWidget(self)
 
         self.aniManager = None
@@ -294,14 +294,17 @@ class RoundMenu(QMenu):
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setMouseTracking(True)
 
+        # fixes https://github.com/zhiyiYo/PyQt-Fluent-Widgets/issues/848
+        self.setStyle(QStyleFactory.create("fusion"))
+
         self.timer.setSingleShot(True)
         self.timer.setInterval(400)
         self.timer.timeout.connect(self._onShowMenuTimeOut)
 
-        self.setShadowEffect(blurRadius=0)
+        self.setShadowEffect()
         self.hBoxLayout.addWidget(self.view, 1, Qt.AlignCenter)
 
-        self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
+        self.hBoxLayout.setContentsMargins(12, 8, 12, 20)
         FluentStyleSheet.MENU.apply(self)
 
         self.view.itemClicked.connect(self._onItemClicked)
@@ -320,7 +323,7 @@ class RoundMenu(QMenu):
         self.itemHeight = height
         self.view.setItemHeight(height)
 
-    def setShadowEffect(self, blurRadius=30, offset=(0, 0), color=QColor(0, 0, 0, 30)):
+    def setShadowEffect(self, blurRadius=30, offset=(0, 8), color=QColor(0, 0, 0, 30)):
         """ add shadow to dialog """
         self.shadowEffect = QGraphicsDropShadowEffect(self.view)
         self.shadowEffect.setBlurRadius(blurRadius)
@@ -707,7 +710,7 @@ class RoundMenu(QMenu):
         self.view.adjustSize()
         self.adjustSize()
 
-    def exec(self, pos, ani=True, aniType=MenuAnimationType.NONE):
+    def exec(self, pos, ani=True, aniType=MenuAnimationType.DROP_DOWN):
         """ show menu
 
         Parameters
@@ -1118,9 +1121,9 @@ class IndicatorMenuItemDelegate(MenuItemDelegate):
         painter.setRenderHints(
             QPainter.Antialiasing | QPainter.SmoothPixmapTransform | QPainter.TextAntialiasing)
 
-        # painter.setPen(Qt.NoPen)
-        # painter.setBrush(themeColor())
-        # painter.drawRoundedRect(6, 11+option.rect.y(), 3, 15, 1.5, 1.5)
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(themeColor())
+        painter.drawRoundedRect(6, 11+option.rect.y(), 3, 15, 1.5, 1.5)
 
         painter.restore()
 

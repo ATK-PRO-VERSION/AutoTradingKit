@@ -1,36 +1,42 @@
-import sys
-from fastapi import FastAPI
-from PySide6.QtCore import QObject, Signal
-from qasync import QEventLoop, asyncSlot,QApplication
-import asyncio
+from atklip.app_api import api
+from psygnal import Signal
 
-app = FastAPI()
 
-class Worker(QObject):
-    task_completed = Signal(int)
 
-    @asyncSlot(int)
-    async def perform_task(self, task_id):
-        # Giả lập một tác vụ bất đồng bộ
-        await asyncio.sleep(1)
-        print(f"Task {task_id} performed")
-        self.task_completed.emit(task_id)
+chart_infor = {"chart_id": "this_is_my_fastapi",
+               "canlde_id":"smooth_exam",
+                "id_exchange":"binanceusdm",
+                "symbol":"BTCUSDT",
+                "interval":"1m",
+                "ma_type":"ema",
+                "ma_leng":10,
+                "n_smooth":13,
+                "name":"smoothcandle",
+                "source":"japan",
+                "precision":3}
 
-worker = Worker()
+# chart_infor = {"chart_id": "this_is_my_fastapi",
+# "canlde_id":"smooth_exam",
+# "id_exchange":"binanceusdm",
+# "symbol":"BTCUSDT",
+# "interval":"1m",
+# "ma_type":"ema",
+# "ma_leng":10,
+# "name":"smoothcandle",
+# "source":"japan",
+# "precision":3}
 
-@worker.task_completed.connect
-def on_task_completed(task_id):
-    print(f"Task {task_id} completed!")
+class Signals:
+    emit_data = Signal(dict)
 
-@app.get("/task/{task_id}")
-async def start_task(task_id: int):
-    asyncio.create_task(worker.perform_task(task_id))
-    return {"message": f"Task {task_id} started"}
+def pprint(text):
+    print(text)
+    
+_emit_data = Signals().emit_data
+_emit_data.connect(pprint)
+"add-smooth-candle"
 
-if __name__ == "__main__":
-    import uvicorn
-    app = QApplication(sys.argv)
-    loop = QEventLoop(app)
+connector = api.add_smooth_candle(chart_infor)
 
-    asyncio.set_event_loop(loop)
-    uvicorn.run(app, host="127.0.0.1", port=8000, loop=loop)
+# connector = api.get_candle_data(chart_infor)
+print(connector)

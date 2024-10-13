@@ -1,4 +1,5 @@
-from typing import Dict, Tuple, List,TYPE_CHECKING
+from typing import Dict, Optional, Tuple, List,TYPE_CHECKING
+from functools import lru_cache
 import numpy as np
 
 from PySide6.QtCore import Signal, QRect, QRectF, QPointF,QThreadPool,Qt,QLineF,QCoreApplication
@@ -8,16 +9,20 @@ from atklip.graphics.pyqtgraph import mkPen, GraphicsObject, mkBrush
 
 from atklip.controls.candle import JAPAN_CANDLE,HEIKINASHI,SMOOTH_CANDLE,N_SMOOTH_CANDLE
 
-from atklip.appmanager import FastWorker,CandleWorker
+from atklip.appmanager import FastWorker
 from .price_lines import PriceLine
 
 from atklip.controls.ma_type import  PD_MAType,IndicatorType
 from atklip.controls.ohlcv import OHLCV
 
+from atklip.controls.models import BaseCandleModel
+
+from atklip.app_api.api import API
+
 if TYPE_CHECKING:
     from atklip.graphics.chart_component.viewchart import Chart
     from atklip.graphics.chart_component.sub_chart import SubChart
-        
+
 
 class CandleStick(GraphicsObject):
     """Live candlestick plot, plotting data [[open, close, min, max], ...]"""
@@ -25,44 +30,22 @@ class CandleStick(GraphicsObject):
     signal_delete = Signal()
     sig_change_name = Signal(str)
     sig_change_indicator_name = Signal(str)
-    def __init__(self,chart,_type, high_color: str = '#089981', low_color: str = '#f23645') -> None:
+    def __init__(self,chart,name) -> None:
         """Choose colors of candle"""
         GraphicsObject.__init__(self)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemUsesExtendedStyleOption,True)
         self.setZValue(999)
         
         self.chart:Chart|SubChart = chart
-        self.precision = self.chart._precision
-        self.symbol = self.chart.symbol
-        self.interval = self.chart.interval
-        self._type:IndicatorType = _type
         
-        self.source, ma_type, period, n = self.get_source(self._type)
+        self.object_id = self.chart.objmanager.add(self)
         
-    
-        if ma_type != None:
-            self.has = {
-            "is_candle": True,
-            "name": f"{self.source.source_name} {ma_type.name} {period} {n}",
-            "y_axis_show":True,
-            "inputs":{
-                    "source":self.source,
-                    "ma_type":ma_type,
-                    "ma_period":period,
-                    "n_smooth_period": n,
-                    "show":True
-                    },
+        self.api = API()
+        
+        self.params = BaseCandleModel(self.chart.id,self.id,name,self.chart.exchange_name,self.chart.symbol,self.chart.interval)
 
-            "styles":{
-                "pen_highcolor":high_color,
-                "pen_lowcolor" : low_color,
-                "brush_highcolor":mkBrush(high_color,width=0.7),
-                "brush_lowcolor":mkBrush(low_color,width=0.7)
-                    }
-                }
-        else:
-            self.has = {
-            "name": f"{self.source.source_name}",
+        self.has = {
+            "name": f"{name}",
             "y_axis_show":True,
             "inputs":{
                     "source":self.source,
@@ -70,20 +53,15 @@ class CandleStick(GraphicsObject):
                     },
 
             "styles":{
-                "pen_highcolor":high_color,
-                "pen_lowcolor" : low_color,
-                "brush_highcolor":mkBrush(high_color,width=0.7),
-                "brush_lowcolor":mkBrush(low_color,width=0.7)
+                "pen_highcolor":'#089981',
+                "pen_lowcolor" : '#f23645',
+                "brush_highcolor":mkBrush('#089981',width=0.7),
+                "brush_lowcolor":mkBrush('#f23645',width=0.7)
                     }
                 }
         
         self.sig_change_indicator_name.emit(self.has["name"])
         
-        if not isinstance(self.source,JAPAN_CANDLE) and not isinstance(self.source,HEIKINASHI):
-            "để không xóa jp và heikin trong viewchart"
-            self.source.setParent(self)
-            self.signal_delete.connect(self.source.signal_delete)
-
         self._bar_picutures: Dict[int, QPicture] = {}
         self.picture: QPicture = None
         self._rect_area: Tuple[float, float] = None
@@ -92,151 +70,48 @@ class CandleStick(GraphicsObject):
         self._start:int = None
         self._stop:int = None
 
-        self.historic_candle = SingleCandleStick(self.chart,self.source,has=self.has)
-        self.historic_candle.setParentItem(self)
+        # self.historic_candle = SingleCandleStick(self.chart,self.source,has=self.has)
+        # self.historic_candle.setParentItem(self)
         
         self.signal_delete.connect(self.delete_source)
-        self.sig_deleted_source.connect(self.chart.remove_source)
         
-        self.source.sig_reset_all.connect(self.update_source,Qt.ConnectionType.QueuedConnection)
-        
-        self.source.sig_add_candle.connect(self.threadpool_asyncworker,Qt.ConnectionType.QueuedConnection)
-        self.source.sig_add_historic.connect(self.threadpool_asyncworker,Qt.ConnectionType.QueuedConnection)
-  
-    def delete_source(self):
-        self.sig_deleted_source.emit(self.source)
-        self.source.signal_delete.emit()
-        
-    def update_source(self):
-        self._is_change_source = True
-        self.chart.remove_source(self.source)
-        source_name = self.has["name"].split(" ")[0]
-        if isinstance(self.source,N_SMOOTH_CANDLE):
-            self.has["name"] = f"{source_name} {self.has["inputs"]["ma_type"].name} {self.has["inputs"]["ma_period"]} {self.has["inputs"]["n_smooth_period"]}"
-        if isinstance(self.source,SMOOTH_CANDLE):
-            self.has["name"] = f"{source_name} {self.has["inputs"]["ma_type"].name} {self.has["inputs"]["ma_period"]}"
+    @property
+    def id(self):
+        return self.object_id
+    
+    def getdata(self):
+        if candles is None or isinstance(candles,list):
+            last_candles = self.source.get_candles(-2)
+            last_candle = last_candles[0]
+            x_data, y_data = [last_candle.index], [[last_candle.open],[last_candle.high],[last_candle.low],[last_candle.close]]
+        elif candles == True:
+            x_data, y_data = self.source.get_index_data(stop=-1)
         else:
-            self.has["name"] = f"{source_name} {self.chart.symbol} {self.chart.interval}"
-        
-        self.source.source_name = self.has["name"]
-        
-        self.chart.update_sources(self.source)
-        self.sig_change_indicator_name.emit(self.has["name"])
-        
-        self.first_setup_candle()
+            n = len(self._bar_picutures)
+            x_data, y_data = self.source.get_index_data(stop=n+1)
+        try:
+            if len(x_data) != len(y_data[0]):
+                raise Exception("Len of x_data must be the same as y_data")
+            setdata.emit((x_data, y_data))
+            # self.setData((x_data, y_data))
+            # QCoreApplication.processEvents()
+        except Exception as e:
+            print(f"loi update {e}")
     
-    def update_inputs(self,_input,_source):
-        """"source":self.source,
-                "ma_type":self.has["inputs"]["ma_type"],
-                "ma_period":self.has["inputs"]["ma_period"]"""
-        update = False
-        if _input == "ma_type":
-            if _source != self.has["inputs"][_input]:
-                self.has["inputs"][_input] = _source
-                update = True
-
-        elif _input == "ma_period":
-            if _source != self.has["inputs"][_input]:
-                self.has["inputs"][_input] = _source
-                update = True
-        elif _input == "n_smooth_period":
-            if _source != self.has["inputs"][_input]:
-                self.has["inputs"][_input] = _source
-                update = True
+    def setdata(self,xdata:list,ydata:List[list]):
+        self.x_data = np.array([xdata])
+        self.y_data = np.array([ydata])
         
-        if update:
-            self._is_change_source = True
-            ma_period = self.has["inputs"].get("ma_period")
-            n_smooth_period = self.has["inputs"].get("n_smooth_period")
-            ma_type = self.has["inputs"].get("ma_type")
-            
-            if ma_type != None:
-                if isinstance(self.source,N_SMOOTH_CANDLE):
-                    self.has["name"] = f"{self.source.source_name} {self.has["inputs"]["ma_type"].name} {self.has["inputs"]["ma_period"]} {self.has["inputs"]["n_smooth_period"]}"
-                else:
-                    self.has["name"] = f"{self.source.source_name} {self.has["inputs"]["ma_type"].name} {self.has["inputs"]["ma_period"]}"
-            else:
-                self.has.update({"inputs":{
-                        "source":self.source,
-                        "show":False
-                        }}) 
-                self.has["name"] = f"{self.source.source_name}"
-                
-            self.sig_change_indicator_name.emit(self.has["name"])
-            
-            if ma_type != None:
-                self.source.refresh_data(ma_type,ma_period,n_smooth_period)
-            
-    def change_interval(self):
-        self._is_change_source = True
-        ma_period = self.has["inputs"].get("ma_type")
-        n_smooth_period = self.has["inputs"].get("n_smooth_period")
-        ma_type = self.has["inputs"].get("ma_type")
-
-        if ma_type != None:
-            self.has["name"] = f"{self.source.source_name} {self.has["inputs"]["ma_type"].name} {self.has["inputs"]["ma_period"]} {self.has["inputs"]["n_smooth_period"]}"
-        else:
-            self.has["name"] = f"{self.source.source_name}"
-            
-        self.sig_change_indicator_name.emit(self.has["name"])
+    def updatedata(self,xdata:np.ndarray,ydata:List[np.ndarray]):
+        self.x_data[-2:] = xdata[-2:]
+        self.y_data[-2:] = ydata[-2:]
         
-        self.chart.sig_update_source.emit(self.source)
-
+    def loaddata(self,xdata:list,ydata:List[list]):
+        self.x_data = np.array([xdata])
+        self.y_data = np.array([ydata])
     
-    
-    def get_source(self,_type:IndicatorType,ma_type:PD_MAType=PD_MAType.EMA, period:int=3,n:int=3):
-
-        if _type.value == "japan" or _type.value == "Sub_Chart":
-            return self.chart.jp_candle, None,None, n
-
-        elif _type.value == "smooth_jp":
-            smooth_jp_candle = SMOOTH_CANDLE(self.precision,self.chart.jp_candle,ma_type,period)
-            smooth_jp_candle._source_name = f"sm_jp {self.chart.symbol} {self.chart.interval}"
-            self.chart.update_sources(smooth_jp_candle)
-            smooth_jp_candle.fisrt_gen_data()
-            return smooth_jp_candle, ma_type,period, n
-        
-        elif _type.value == "n_smooth_jp":
-            n_smooth_jp = N_SMOOTH_CANDLE(self.precision,self.chart.jp_candle,n,ma_type,period)
-            n_smooth_jp._source_name = f"n_smooth_jp {self.chart.symbol} {self.chart.interval}"
-            self.chart.update_sources(n_smooth_jp)
-            n_smooth_jp.fisrt_gen_data()
-            return n_smooth_jp, ma_type, period,n
-        
-        elif _type.value == "heikin":
-            return self.chart.heikinashi, None,None, n
-            
-        elif _type.value == "smooth_heikin":
-            smooth_heikin = SMOOTH_CANDLE(self.precision,self.chart.heikinashi,ma_type,period)
-            smooth_heikin._source_name = f"sm_heikin {self.chart.symbol} {self.chart.interval}"
-            self.chart.update_sources(smooth_heikin)
-            smooth_heikin.fisrt_gen_data()
-            return smooth_heikin, ma_type,period, n
-            
-        elif _type.value == "n_smooth_heikin":
-            n_smooth_heikin = N_SMOOTH_CANDLE(self.precision,self.chart.heikinashi,n,ma_type,period)
-            n_smooth_heikin._source_name = f"n_smooth_heikin {self.chart.symbol} {self.chart.interval}"
-            self.chart.update_sources(n_smooth_heikin)
-            n_smooth_heikin.fisrt_gen_data()
-            return n_smooth_heikin, ma_type, period,n
-            
     def get_inputs(self):
-        if isinstance(self.source,JAPAN_CANDLE) or isinstance(self.source,HEIKINASHI):
-            return {}
-        if isinstance(self.source,N_SMOOTH_CANDLE):
-            return  {"ma_type":self.has["inputs"]["ma_type"],
-                    "ma_period":self.has["inputs"]["ma_period"],
-                    "n_smooth_period":self.has["inputs"]["n_smooth_period"],}
-        inputs =  {"ma_type":self.has["inputs"]["ma_type"],
-                    "ma_period":self.has["inputs"]["ma_period"],}
-        return inputs
-
-    def get_styles(self):
-        styles =  {"pen_highcolor":self.has["styles"]["pen_highcolor"],
-                    "pen_lowcolor":self.has["styles"]["pen_lowcolor"],
-                    "brush_highcolor":self.has["styles"]["brush_highcolor"],
-                    "brush_lowcolor":self.has["styles"]["brush_lowcolor"],}
-        return styles
+        return {}
     
     def update_styles(self, _input):
         self._is_change_source = True
@@ -252,12 +127,7 @@ class CandleStick(GraphicsObject):
         self.historic_candle.price_line.update_data(self.source.candles[-2:])
         self.historic_candle.threadpool_asyncworker(self.source.candles[-2:])
     
-    
-    def first_setup_candle(self):
-        self.threadpool_asyncworker(True)
-        # x_data, y_data = self.source.get_index_data(stop=-1)
-        # self.setData((x_data, y_data))
-  
+
     def threadpool_asyncworker(self,candles=None):
         self.worker = None
         self.worker = FastWorker(self.update_last_data,candles)
@@ -344,36 +214,43 @@ class CandleStick(GraphicsObject):
         h_low = df["low"].iloc[self._start:self._stop].min()
         rect = QRectF(x_left,h_low,self._stop-self._start,h_high-h_low)
         return rect
-
+    @lru_cache()
     def draw_candle(self,_open,_max,_min,close,w,t):
         # t = x_data[index]
         "dieu kien de han che viec ve lai khi add new candle"
         if not self._bar_picutures.get(t):
-            candle_picture:QPicture =QPicture()
-            p:QPainter =QPainter(candle_picture)
-            if _open > close:
-                self.outline_pen = mkPen(color=self.has["styles"]["pen_lowcolor"],width=0.7) #,width=0.7
-                p.setPen(self.outline_pen)
-                p.setBrush(self.has["styles"]["brush_lowcolor"])
-            else:
-                self.outline_pen = mkPen(color=self.has["styles"]["pen_highcolor"],width=0.7) #,width=0.7
-                p.setPen(self.outline_pen)
-                p.setBrush(self.has["styles"]["brush_highcolor"])
-            _height = close - _open
-            if _height == 0:
-                if _max != _min:
-                    line = QLineF(QPointF(t, _min), QPointF(t, _max))
-                    p.drawLine(line)
-                _line = QLineF(QPointF(t - w, _open), QPointF(t + w, close))
-                p.drawLine(_line)
-            else:
+            self.draw_single_candle(_open,_max,_min,close,w,t)
+            return True
+        return False
+
+    def draw_single_candle(self,_open,_max,_min,close,w,t):
+        candle_picture:QPicture =QPicture()
+        p:QPainter =QPainter(candle_picture)
+        if _open > close:
+            self.outline_pen = mkPen(color=self.has["styles"]["pen_lowcolor"],width=0.7) #,width=0.7
+            p.setPen(self.outline_pen)
+            p.setBrush(self.has["styles"]["brush_lowcolor"])
+            
+        else:
+            self.outline_pen = mkPen(color=self.has["styles"]["pen_highcolor"],width=0.7) #,width=0.7
+            p.setPen(self.outline_pen)
+            p.setBrush(self.has["styles"]["brush_highcolor"])
+        
+        _height = close - _open
+        if _height == 0:
+            if _max != _min:
                 line = QLineF(QPointF(t, _min), QPointF(t, _max))
                 p.drawLine(line)
-                rect = QRectF(t - w, _open, w * 2, close - _open)  
-                p.drawRect(rect)
-            p.end()
-            self._bar_picutures[t] = candle_picture
-
+            _line = QLineF(QPointF(t - w, _open), QPointF(t + w, close))
+            p.drawLine(_line)
+        else:
+            line = QLineF(QPointF(t, _min), QPointF(t, _max))
+            p.drawLine(line)
+            rect = QRectF(t - w, _open, w * 2, close - _open)  
+            p.drawRect(rect)
+        p.end()
+        self._bar_picutures[t] = candle_picture
+    
     def setData(self, data) -> None:
         """y_data must be in format [[open, close, min, max], ...]"""
         self._to_update = False
@@ -403,8 +280,8 @@ class CandleStick(GraphicsObject):
         try:
             if len(x_data) != len(y_data[0]):
                 raise Exception("Len of x_data must be the same as y_data")
-            # setdata.emit((x_data, y_data))
-            self.setData((x_data, y_data))
+            setdata.emit((x_data, y_data))
+            # self.setData((x_data, y_data))
             # QCoreApplication.processEvents()
         except Exception as e:
             print(f"loi update {e}")

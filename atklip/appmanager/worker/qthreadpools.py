@@ -27,7 +27,7 @@ class QProcessWorker(QObject):
         super(QProcessWorker, self).__init__()
         self.fn = fn
         self.args = args
-        self.kwargs = kwargs.copy()
+        self.kwargs = kwargs
         self.threadpool = ProcessPoolExecutor_global
         
     def start_thread(self):
@@ -81,7 +81,7 @@ class FastWorker(QObject):
         # self.setAutoDelete(True)
         self.fn = fn
         self.args = args
-        self.kwargs = kwargs.copy()
+        self.kwargs = kwargs
         self.signals = WorkerSignals() 
         self.kwargs['setdata'] = self.signals.setdata
         self.threadpool = ThreadPoolExecutor_global
@@ -114,7 +114,7 @@ class SimpleWorker(QObject):
         super(SimpleWorker, self).__init__()
         self.fn = fn
         self.args = args
-        self.kwargs = kwargs.copy()
+        self.kwargs = kwargs
         self.threadpool = ThreadPoolExecutor_global
         
     def start_thread(self):
@@ -142,7 +142,7 @@ class CandleWorker(QObject):
         super(CandleWorker, self).__init__()
         self.fn = fn
         self.args = args
-        self.kwargs = kwargs.copy()
+        self.kwargs = kwargs
         self.threadpool = ThreadPoolExecutor_global
         
     def start(self):

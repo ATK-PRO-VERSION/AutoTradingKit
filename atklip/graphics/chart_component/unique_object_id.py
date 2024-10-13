@@ -1,6 +1,6 @@
 import uuid
 
-class ObjManager:
+class UniqueManager:
     def __init__(self):
         self.list_id = []
         self.list_obj_name = []

@@ -38,7 +38,7 @@ class MainWidget(QWidget,Ui_MainWidget):
         self.topbar.sig_goto_date.connect(self.chartbox_splitter.chart.sig_goto_date,Qt.ConnectionType.AutoConnection)
         
         self.topbar.sig_add_indicator_to_chart.connect(self.chartbox_splitter.sig_add_indicator_to_chart,Qt.ConnectionType.AutoConnection)
-        self.topbar.sig_change_candle_type.connect(self.chartbox_splitter.chart.sig_change_candle_type,Qt.ConnectionType.AutoConnection)
+        self.topbar.sig_change_market_type.connect(self.chartbox_splitter.chart.sig_change_market_type,Qt.ConnectionType.AutoConnection)
         "signal from TopBar"
         self.progress = LoadingProgress(self)
         self.chartbox_splitter.chart.sig_show_process.connect(self.progress.run_process,Qt.ConnectionType.AutoConnection)

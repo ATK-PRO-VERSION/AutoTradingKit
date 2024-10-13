@@ -40,7 +40,7 @@ class CandleButton(SplitWidgetBase):
     """
 
     clicked = Signal()
-    sig_change_candle_type = Signal(str)
+    sig_change_market_type = Signal(str)
     #@singledispatchmethod
     def __init__(self, parent: QWidget = None):
         super().__init__(parent=parent)
@@ -112,7 +112,7 @@ class CandleButton(SplitWidgetBase):
         elif self.current_active != current_active:
             self.current_active = current_active 
             if self.is_loaded:
-                self.sig_change_candle_type.emit(("change_candle_type",self.current_active.objectName()))
+                self.sig_change_market_type.emit(("change_market_type",self.current_active.objectName()))
         
         self.current_active.setChecked(True)
         self.current_active.show()

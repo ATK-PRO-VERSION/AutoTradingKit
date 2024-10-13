@@ -26,7 +26,7 @@ class TopBar(QFrame,TopFrame):
     sig_change_inteval = Signal(tuple)
     sig_goto_date = Signal(tuple)
     sig_add_indicator_to_chart = Signal(tuple)
-    sig_change_candle_type = Signal(str)
+    sig_change_market_type = Signal(str)
     sig_replay =  Signal(bool)
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -38,7 +38,7 @@ class TopBar(QFrame,TopFrame):
         self.exchange = CR_EXCHANGE(self.sig_change_symbol,self._parent)
         self.symbol = SymbolButton(self.sig_change_symbol,CI.BTC,"BTCUSDT",self._parent)
         self.interval = IntervalButton(self._parent,self.sig_change_inteval)
-        # self.candle = CANDLES(self.sig_change_candle_type,self._parent)
+        # self.candle = CANDLES(self.sig_change_market_type,self._parent)
         self.indicator = IndicatorButton(self.sig_add_indicator_to_chart,self._parent)
         
         self.replay = ReplayButton(self.sig_replay,FIF.REPLAY,"Replay",self._parent)

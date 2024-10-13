@@ -73,7 +73,10 @@ class Volume(GraphicsObject):
         self.chart.jp_candle.sig_add_historic.connect(self.threadpool_asyncworker,Qt.ConnectionType.AutoConnection)
         
         self.sig_change_yaxis_range.connect(get_last_pos_worker, Qt.ConnectionType.AutoConnection)
-        
+        self.object_id = self.chart.objmanager.add(self)
+    @property
+    def id(self):
+        return self.object_id
         
     def get_inputs(self):
         inputs =  {}

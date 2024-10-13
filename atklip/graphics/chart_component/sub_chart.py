@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QGraphicsView
 from PySide6.QtGui import QPainter
 
 import numpy as np
-from atklip.app_utils.calculate import convert_precicion, round_
+from atklip.app_utils.calculate import convert_precision, round_
 from atklip.graphics.pyqtgraph import mkPen, PlotWidget
 from atklip.appmanager import FastWorker
 from atklip.graphics.chart_component.base_items import CandleStick, PriceLine
@@ -263,7 +263,7 @@ class SubChart(PlotWidget):
     def set_market_by_symbol(self,exchange):
         market = exchange.market(self.symbol)
         #print(market)
-        _precision = convert_precicion(market['precision']['price'])
+        _precision = convert_precision(market['precision']['price'])
         self.set_precision(_precision)
         #print("self._precision", self._precision)
     
@@ -345,7 +345,7 @@ class SubChart(PlotWidget):
                     self.panel.btn_more.clicked.connect(self.dockLabel.floatDock)
                 self.container_indicator_wg.add_indicator_panel(self.panel)
                 self.add_item(self.indicator)
-                self.indicator.first_setup_candle()
+                self.indicator.first_setup_market()
             else:
                 self.indicator.change_interval()
         self.auto_xrange()

@@ -5,14 +5,13 @@ darkdetect
 colorthief
 scipy
 pillow
-numpy
+numpy==2.0.2
 pyqtgraph
 pandas
 numba
 ccxt
 PyOpenGL
 cython
-dotenv
 fastapi
 uvicorn
 multitasking
@@ -20,18 +19,19 @@ pandas-datareader
 pyarrow
 setuptools
 streamlit
-polars[all]
-cryptofeed[all]
-polars-lts-cpu
+# polars
+# polars-lts-cpu
 python-rapidjson
 humanize
 websockets
 wsproto
-uvloop
 httptools
-#polars-ta
+psygnal
+slowapi
+winloop
+#polars-ta  
 # pip install 'polars[all]'
 # TA-Lib==0.4.28
 # yfinance==0.2.40
-
+#winloop not install window
 

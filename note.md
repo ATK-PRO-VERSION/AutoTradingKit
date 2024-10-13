@@ -2,6 +2,10 @@ Thêm 1 số indicators PANDAS-TA
 
 **Celery**: thư viện chạy tác vụ nền
 
+
+pip install --upgrade -r requirements.txt
+
+
 https://pypi.org/project/celery/
 
 https://github.com/twopirllc/pandas-ta/pull/661/files#diff-45fcc49d657dcb2c763943b43322a3c91d2b054484f0d1e2d18388ae3124e714
@@ -10,14 +14,9 @@ build Ta_lib
 https://github.com/cgohlke/talib-build/
 d:/AutoTradingKit/venv/Scripts/python.exe -3.12 -m pip install TA_Lib-0.4.32-cp312-cp312-win_amd64.whl
 
-
-#https://github.com/MagicStack/uvloop nhanh hơn
+#https://github.com/MagicStack/uvloop nhanh hơn không chạy trên window
 
 #https://github.com/pyapp-kit/psygnal  signal-slot thay thế qt-signal-slot
-
-https://github.com/pyapp-kit/superqt
-
-
 
 Khi sử dụng lệnh `cythonize`, bạn có thể cung cấp nhiều tham số để tinh chỉnh quá trình biên dịch. Dưới đây là một số tham số phổ biến mà bạn có thể sử dụng:
 
@@ -65,48 +64,3 @@ Có nhiều tùy chọn tối ưu hóa khác nhau có thể được sử dụng
 5. **-Ofast** : Tối ưu hóa nhanh. Áp dụng các tối ưu hóa về hiệu suất mà không đảm bảo tính ổn định của mã.
 6. **-Os** : Tối ưu hóa kích thước. Tối ưu hóa để giảm kích thước của các tệp thực thi.
 7. **-Og** : Tối ưu hóa đội ngũ. Tối ưu hóa cho việc gỡ lỗi và tối ưu hóa cho tốc độ biên dịch.
-
-   *Khi nào update CCXT thì sửa hàm này trong
-
-   venv\Lib\site-packages\ccxt\async_support\base\exchange.py
-
-   ```
-   def watch(self, url, message_hash, message=None, subscribe_hash=None, subscription=None):
-           # base exchange self.open starts the aiohttp Session in an async context
-           self.open()
-           backoff_delay = 0
-           client = self.client(url)
-           if subscribe_hash is None and message_hash in client.futures:
-               return client.futures[message_hash]
-           future = client.future(message_hash)
-
-           subscribed = client.subscriptions.get(subscribe_hash)
-
-           if not subscribed:
-               client.subscriptions[subscribe_hash] = subscription or True
-
-           connected = client.connected if client.connected.done() \
-               else asyncio.ensure_future(client.connect(self.session, backoff_delay))
-
-           def after(fut):
-               # todo: decouple signing from subscriptions
-               options = self.safe_value(self.options, 'ws')
-               cost = self.safe_value(options, 'cost', 1)
-               if message:
-                   async def send_message():
-                       if self.enableRateLimit:
-                           await client.throttle(cost)
-                       try:
-                           await client.send(message)
-                       except ConnectionError as e:
-                           client.on_error(e)
-                       except Exception as e:
-                           client.on_error(e)
-                   asyncio.ensure_future(send_message())
-   	"đây là đoạn sửa, để check internet conection"
-           # if not subscribed:
-           #     connected.add_done_callback(after)
-           connected.add_done_callback(after)
-
-           return future
-   ```

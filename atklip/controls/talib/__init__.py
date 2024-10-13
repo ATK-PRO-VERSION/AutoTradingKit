@@ -5,7 +5,10 @@ from functools import wraps
 
 # If polars is available, wrap talib functions so that they support
 # polars.Series input
+
 try:
+    import os
+    os.environ["POLARS_SKIP_CPU_CHECK"] = "1"
     from polars import Series as _pl_Series
 except ImportError:
     # polars not available, nothing to wrap

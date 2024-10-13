@@ -11,7 +11,7 @@ from atklip.gui.qfluentwidgets.common import *
 from .btn_candle import CandleButton
 from atklip.appmanager import AppConfig
 class CANDLES(HWIDGET):
-    def __init__(self,sig_change_candle_type,parent:QWidget=None):
+    def __init__(self,sig_change_market_type,parent:QWidget=None):
         super().__init__(parent)
         #self.setClickEnabled(False)
         self.parent = parent

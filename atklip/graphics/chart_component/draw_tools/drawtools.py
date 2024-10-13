@@ -34,6 +34,19 @@ class DrawTool(QObject):
         self.num_textbox = 0
         self.drawing_object = None
         self.draw_object_name = None
+    
+    def get_position_crosshair(self):
+        return self.chart.vLine.getXPos(), self.chart.hLine.getYPos()
+    
+    def get_position_mouse_on_chart(self, ev: QEvent):
+        if self.chart.magnet_on:
+            pos_x, pos_y = self.get_position_crosshair()
+        else:
+            ev_pos = ev.position()
+            pos_x = self.chart.vb.mapSceneToView(ev_pos).x()
+            pos_y = self.chart.vb.mapSceneToView(ev_pos).y()
+        return pos_x, pos_y
+    
     def draw_trenlines(self, ev: QEvent):
         pos_x, pos_y = self.get_position_mouse_on_chart(ev)
         line = TrendlinesROI(positions=[[pos_x, pos_y],[pos_x, pos_y]], pen=("#2962ff"),drawtool=self)
@@ -41,6 +54,7 @@ class DrawTool(QObject):
         self.num_trendline += 1
         module_name = "Trend Line " + str(self.num_trendline)
         line.setObjectName(module_name)
+        uid_obj = self.chart.objmanager.add(line)
         self.drawing_object = line
         self.draw_object_name = "drawed_trenlines"
 
@@ -53,17 +67,6 @@ class DrawTool(QObject):
         line.setObjectName(module_name)
         uid_obj = self.chart.objmanager.add(line)
         self.draw_object_name = None
-    def get_position_crosshair(self):
-        return self.chart.vLine.getXPos(), self.chart.hLine.getYPos()
-    
-    def get_position_mouse_on_chart(self, ev: QEvent):
-        if self.chart.magnet_on:
-            pos_x, pos_y = self.get_position_crosshair()
-        else:
-            ev_pos = ev.position()
-            pos_x = self.chart.vb.mapSceneToView(ev_pos).x()
-            pos_y = self.chart.vb.mapSceneToView(ev_pos).y()
-        return pos_x, pos_y
 
     def draw_horizontal_line(self, ev: QEvent):
         pos_x, pos_y = self.get_position_mouse_on_chart(ev)

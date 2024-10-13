@@ -1,9 +1,9 @@
 from multiprocessing.spawn import freeze_support
+import signal
 import sys
-from multiprocessing import Process, set_start_method
+from multiprocessing import Process
 import uvicorn
 import os
-import signal
 
 from atklip.gui.qfluentwidgets.common import setTheme,Theme
 from atklip.gui.qfluentwidgets.common.icon import *
@@ -13,29 +13,24 @@ from PySide6.QtCore import QCoreApplication,QSize
 from PySide6.QtGui import QCloseEvent,QIcon
 from PySide6.QtWidgets import QApplication
 
-# global socket_process, socket_process_pid
-# socket_process: Process
-# socket_process_pid: int
-HTTPProtocolType = Literal["auto", "h11", "httptools"]
-WSProtocolType = Literal["auto", "none", "websockets", "wsproto"]
-LifespanType = Literal["auto", "on", "off"]
-LoopSetupType = Literal["none", "auto", "asyncio", "uvloop"]
-InterfaceType = Literal["auto", "asgi3", "asgi2", "wsgi"]
 
 def start_server():
-    uvicorn.run("atklip.app_api:app", 
+    uvicorn.config.LOOP_SETUPS.update({"winloop":"winloop:install"})
+    uvicorn.run("atklip.app_api.sockets:app", 
                 host="localhost", 
                 port=2022, 
-                loop="auto",
+                loop="winloop",
                 http="httptools",
                 ws="wsproto",
+                interface="asgi3",
+                lifespan="on",
                 workers=1,
                 ws_max_queue=1000,
                 limit_max_requests=100000,
+                timeout_keep_alive=360,
                 reload=False)
 
 def create_server():
-    # set_start_method("spawn")
     _socket_process = Process(target=start_server) 
     _socket_process.start()
     process_pid = _socket_process.pid
@@ -51,7 +46,7 @@ class MainWindow(WindowBase):
         quit_msg = QCoreApplication.translate("MainWindow", u"To close window click button OK", None)   
         mgsBox = MessageBox("Quit Application?", quit_msg, self.window())
         if mgsBox.exec():
-            os.kill(self.socket_process_pid, signal.CTRL_BREAK_EVENT)
+            # os.kill(self.socket_process_pid, signal.SIGTERM)
             self.socket_process.terminate()
             self.socket_process.join()
             self.close_window()

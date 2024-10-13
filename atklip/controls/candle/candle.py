@@ -4,34 +4,43 @@ from dataclasses import dataclass
 from atklip.controls.ohlcv import OHLCV
 import pandas as pd
 import numpy as np,array
-
-from PySide6.QtCore import Qt, Signal,QObject,QCoreApplication
-from atklip.appmanager import CandleWorker
-
+from psygnal import evented,Signal,throttled
 #@dataclass
-class JAPAN_CANDLE(QObject):
+class JAPAN_CANDLE():
     """
     lastcandle: chính là lastcandle signal của chartview, hiện tại chưa dùng"
     """
     candles: List[OHLCV] = []
     dict_index_ohlcv: Dict[int, OHLCV] = {}
     dict_time_ohlcv: Dict[int, OHLCV] = {}
-    sig_update_candle = Signal(list)
-    sig_add_candle = Signal(list)
-    sig_add_historic = Signal(int)
-    sig_reset_all = Signal()
+    sig_update_candle = Signal(list,reemission="queued")
+    sig_add_candle = Signal(list,reemission="queued")
+    sig_add_historic = Signal(int,reemission="queued")
+    sig_reset_all = Signal(reemission="queued")
     signal_delete = Signal()
     sig_update_source = Signal()
     
     sig_reset_source = Signal(str)
     
     def __init__(self) -> None:
-        super().__init__(parent=None)
-        self.first_gen = False
+        
+        self.exchange_id:str
+        self.symbol:str
+        self.interval:str
+        
         self._source_name = "JAPAN_CANDLE"
-        self.signal_delete.connect(self.deleteLater)
+        self.first_gen = False
         self.df = pd.DataFrame([])
-
+        
+    
+    def set_candle_infor(self,exchange_id,symbol,interval):
+        self.exchange_id = exchange_id
+        self.symbol = symbol
+        self.interval = interval
+    
+    def get_candle_infor(self):
+        return self.exchange_id, self.symbol, self.interval
+    
     @property
     def source_name(self):
         return self._source_name
@@ -50,45 +59,53 @@ class JAPAN_CANDLE(QObject):
     #@lru_cache(maxsize=128)
     def get_times(self,start:int=0,stop:int=0) -> List[int]:
         if start == 0 and stop == 0:
-            return [candle.time for candle in self.candles]
+            avg = self.df["time"].to_list()
         elif start == 0 and stop != 0:
-            return [candle.time for candle in self.candles[:stop]]
+            avg = self.df["time"].iloc[:stop].to_list()
         elif start != 0 and stop == 0:
-            return [candle.time for candle in self.candles[start:]]
+            avg = self.df["time"].iloc[start:].to_list()
         else:
-            return [candle.time for candle in self.candles[start:stop]]
+            avg = self.df["time"].iloc[start:stop].to_list()
+        return avg
+        
     #@lru_cache(maxsize=128)
     def get_indexs(self,start:int=0,stop:int=0) -> List[int]:
         if start == 0 and stop == 0:
-            return [candle.index for candle in self.candles]
+            avg = self.df["index"].to_list()
         elif start == 0 and stop != 0:
-            return [candle.index for candle in self.candles[:stop]]
+            avg = self.df["index"].iloc[:stop].to_list()
         elif start != 0 and stop == 0:
-            return [candle.index for candle in self.candles[start:]]
+            avg = self.df["index"].iloc[start:].to_list()
         else:
-            return [candle.index for candle in self.candles[start:stop]]
+            avg = self.df["index"].iloc[start:stop].to_list()
+        return avg
+        
     #@lru_cache(maxsize=128)
     def get_values(self,start:int=0,stop:int=0) -> List[List[float]]:
+        
         if start == 0 and stop == 0:
-            return [[candle.open, candle.high, candle.low, candle.close] for candle in self.candles]
+            avg = [self.df["open"].to_list(),self.df["high"].to_list(),self.df["low"].to_list(),self.df["close"].to_list()]
         elif start == 0 and stop != 0:
-            return [[candle.open, candle.high, candle.low, candle.close] for candle in self.candles[:stop]]
+            avg = [self.df["open"].iloc[:stop].to_list(),self.df["high"].iloc[:stop].to_list(),self.df["low"].iloc[:stop].to_list(),self.df["close"].iloc[:stop].to_list()]
         elif start != 0 and stop == 0:
-            return [[candle.open, candle.high, candle.low, candle.close] for candle in self.candles[start:]]
+            avg = [self.df["open"].iloc[start:].to_list(),self.df["high"].iloc[start:].to_list(),self.df["low"].iloc[start:].to_list(),self.df["close"].iloc[start:].to_list()]
         else:
-            return [[candle.open, candle.high, candle.low, candle.close] for candle in self.candles[start:stop]]
+            avg = [self.df["open"].iloc[start:stop].to_list(),self.df["high"].iloc[start:stop].to_list(),self.df["low"].iloc[start:stop].to_list(),self.df["close"].iloc[start:stop].to_list()]
+        return avg
     #@lru_cache(maxsize=128)
     def get_volumes(self,start:int=0,stop:int=0) -> List[List[float]]:
         if start == 0 and stop == 0:
-            return [[candle.open, candle.close, candle.volume] for candle in self.candles]
+            avg = [self.df["open"].to_list(),self.df["close"].to_list(),self.df["volume"].to_list()]
         elif start == 0 and stop != 0:
-            return [[candle.open, candle.close, candle.volume] for candle in self.candles[:stop]]
+            avg = [self.df["open"].iloc[:stop].to_list(),self.df["close"].iloc[:stop].to_list(),self.df["volume"].iloc[:stop].to_list()]
         elif start != 0 and stop == 0:
-            return [[candle.open, candle.close, candle.volume] for candle in self.candles[start:]]
+            avg = [self.df["open"].iloc[start:].to_list(),self.df["close"].iloc[start:].to_list(),self.df["volume"].iloc[start:].to_list()]
         else:
-            return [[candle.open, candle.close, candle.volume] for candle in self.candles[start:stop]]
+            avg = [self.df["open"].iloc[start:stop].to_list(),self.df["close"].iloc[start:stop].to_list(),self.df["volume"].iloc[start:stop].to_list()]
+        return avg
+
     #@lru_cache(maxsize=128)
-    def get_candles(self,n:int=0) -> List[OHLCV]:
+    def get_n_last_candles(self,n:int=0) -> List[OHLCV]:
         if n == 0:
             return self.candles
         else:
@@ -99,26 +116,7 @@ class JAPAN_CANDLE(QObject):
             return self.candles
         else:
             return self.candles[:n]
-    def getspecialvalues(self,_type):
-        if _type == 'open':
-            return [candle.index for candle in self.candles], [candle.open for candle in self.candles]
-        elif _type == 'high':
-            return [candle.index for candle in self.candles], [candle.high for candle in self.candles]
-        elif _type == 'low':
-            return [candle.index for candle in self.candles], [candle.low for candle in self.candles]
-        elif _type == 'close':
-            return [candle.index for candle in self.candles], [candle.close for candle in self.candles]
-        elif _type == 'volume':
-            return [candle.index for candle in self.candles], [candle.volume for candle in self.candles]
-        elif _type == 'hl2':
-            return [candle.index for candle in self.candles], [candle.hl2 for candle in self.candles]
-        elif _type == 'hlc3':
-            return [candle.index for candle in self.candles], [candle.hlc3 for candle in self.candles]
-        elif _type == 'ohlc4':
-            return [candle.index for candle in self.candles], [candle.ohlc4 for candle in self.candles]
-        else:
-            return [], []
-    #@lru_cache(maxsize=128)
+
     def get_data(self,start:int=0,stop:int=0):
         all_time = self.get_times(start,stop)
         all_data = self.get_values(start,stop)
@@ -179,6 +177,58 @@ class JAPAN_CANDLE(QObject):
             all_volume = self.df["volume"].iloc[start:stop].to_list()
             all_close = self.df["close"].iloc[start:stop].to_list()
         return {"index":all_index,"data":[all_open,all_close,all_volume]}
+    
+    #@lru_cache(maxsize=128)
+    def get_ohlc4(self,start:int=0,stop:int=0) -> List[List[float]]:
+        if start == 0 and stop == 0:
+            avg = (self.df["open"].to_numpy() + self.df["high"].to_numpy() + self.df["low"].to_numpy() + self.df["close"].to_numpy()) / 4
+        elif start == 0 and stop != 0:
+            avg = (self.df["open"].to_numpy() + self.df["high"].iloc[:stop].to_numpy() + self.df["low"].iloc[:stop].to_numpy() + self.df["close"].to_numpy()) / 4
+        elif start != 0 and stop == 0:
+            avg = (self.df["open"].to_numpy() + self.df["high"].iloc[start:].to_numpy() + self.df["low"].iloc[start:].to_numpy() + self.df["close"].to_numpy()) / 4
+        else:
+            avg = (self.df["open"].to_numpy() + self.df["high"].iloc[start:stop].to_numpy() + self.df["low"].iloc[start:stop].to_numpy() + self.df["close"].to_numpy()) / 4
+        return avg.tolist()
+    
+    #@lru_cache(maxsize=128)
+    def get_hlc3(self,start:int=0,stop:int=0) -> List[List[float]]:
+        if start == 0 and stop == 0:
+            avg = (self.df["high"].to_numpy() + self.df["low"].to_numpy() + self.df["close"].to_numpy()) / 3
+        elif start == 0 and stop != 0:
+            avg = (self.df["high"].iloc[:stop].to_numpy() + self.df["low"].iloc[:stop].to_numpy() + self.df["close"].to_numpy()) / 3
+        elif start != 0 and stop == 0:
+            avg = (self.df["high"].iloc[start:].to_numpy() + self.df["low"].iloc[start:].to_numpy() + self.df["close"].to_numpy()) / 3
+        else:
+            avg = (self.df["high"].iloc[start:stop].to_numpy() + self.df["low"].iloc[start:stop].to_numpy() + self.df["close"].to_numpy()) / 3
+        return avg.tolist()
+    
+    #@lru_cache(maxsize=128)
+    def get_hl2(self,start:int=0,stop:int=0) -> List[List[float]]:
+        if start == 0 and stop == 0:
+            avg = (self.df["high"].to_numpy() + self.df["low"].to_numpy()) / 2
+        elif start == 0 and stop != 0:
+            avg = (self.df["high"].iloc[:stop].to_numpy() + self.df["low"].iloc[:stop].to_numpy()) / 2
+        elif start != 0 and stop == 0:
+            avg = (self.df["high"].iloc[start:].to_numpy() + self.df["low"].iloc[start:].to_numpy()) / 2
+        else:
+            avg = (self.df["high"].iloc[start:stop].to_numpy() + self.df["low"].iloc[start:stop].to_numpy()) / 2
+        return avg.tolist()
+    #@lru_cache(maxsize=128)
+    def get_index_hl2(self,start:int=0,stop:int=0):
+        all_index = self.get_indexs(start,stop)
+        all_data = self.get_hl2(start,stop)
+        return [all_index,all_data]
+    #@lru_cache(maxsize=128)
+    def get_index_hlc3(self,start:int=0,stop:int=0):
+        all_index = self.get_indexs(start,stop)
+        all_data = self.get_hlc3(start,stop)
+        return [all_index,all_data]
+    #@lru_cache(maxsize=128)
+    def get_index_ohlc4(self,start:int=0,stop:int=0):
+        all_index = self.get_indexs(start,stop)
+        all_data = self.get_ohlc4(start,stop)
+        return [all_index,all_data]
+    
     def get_last_candle(self):
         return self.df.iloc[-1].to_dict()
     #@lru_cache(maxsize=128)
@@ -192,57 +242,6 @@ class JAPAN_CANDLE(QObject):
             return self.candles[-1]
         else:
             return []
-    #@lru_cache(maxsize=128)
-    def get_ohlc4(self,start:int=0,stop:int=0) -> List[List[float]]:
-        if start == 0 and stop == 0:
-            return [sum([candle.open, candle.close, candle.high, candle.low])/4 for candle in self.candles]
-        elif start == 0 and stop != 0:
-            return [sum([candle.open, candle.close, candle.high, candle.low])/4 for candle in self.candles[:stop]]
-        elif start != 0 and stop == 0:
-            return [sum([candle.open, candle.close, candle.high, candle.low])/4 for candle in self.candles[start:]]
-        else:
-            return [sum([candle.open, candle.close, candle.high, candle.low])/4 for candle in self.candles[start:stop]]
-    #@lru_cache(maxsize=128)
-    def get_hlc3(self,start:int=0,stop:int=0) -> List[List[float]]:
-        if start == 0 and stop == 0:
-            return [sum([candle.close, candle.high, candle.low])/3 for candle in self.candles]
-        elif start == 0 and stop != 0:
-            return [sum([candle.close, candle.high, candle.low])/3 for candle in self.candles[:stop]]
-        elif start != 0 and stop == 0:
-            return [sum([candle.close, candle.high, candle.low])/3 for candle in self.candles[start:]]
-        else:
-            return [sum([candle.close, candle.high, candle.low])/3 for candle in self.candles[start:stop]]
-    #@lru_cache(maxsize=128)
-    def get_hl2(self,start:int=0,stop:int=0) -> List[List[float]]:
-        if start == 0 and stop == 0:
-            return [sum([candle.high, candle.low])/2 for candle in self.candles]
-        elif start == 0 and stop != 0:
-            return [sum([candle.high, candle.low])/2 for candle in self.candles[:stop]]
-        elif start != 0 and stop == 0:
-            return [sum([candle.high, candle.low])/2 for candle in self.candles[start:]]
-        else:
-            return [sum([candle.high, candle.low])/2 for candle in self.candles[start:stop]]
-    #@lru_cache(maxsize=128)
-    def get_index_hl2(self,start:int=0,stop:int=0):
-        all_index = self.get_indexs(start,stop)
-        all_data = self.get_hl2(start,stop)
-        all_index_np = np.array(all_index)
-        all_data_np = np.array(all_data)
-        return all_index_np,all_data_np
-    #@lru_cache(maxsize=128)
-    def get_index_hlc3(self,start:int=0,stop:int=0):
-        all_index = self.get_indexs(start,stop)
-        all_data = self.get_hlc3(start,stop)
-        all_index_np = np.array(all_index)
-        all_data_np = np.array(all_data)
-        return all_index_np,all_data_np
-    #@lru_cache(maxsize=128)
-    def get_index_ohlc4(self,start:int=0,stop:int=0):
-        all_index = self.get_indexs(start,stop)
-        all_data = self.get_ohlc4(start,stop)
-        all_index_np = np.array(all_index)
-        all_data_np = np.array(all_data)
-        return all_index_np,all_data_np
     
     def fisrt_gen_data(self,ohlcv,_precision):
         self.first_gen = False
@@ -384,7 +383,7 @@ class JAPAN_CANDLE(QObject):
                     self.sig_update_candle.emit(self.candles[-2:])
                     return False
                 return None
-            else:
+            elif _time < new_candle.time:
                 pre_candle:OHLCV = new_candles[-2]
                 
                 last_candle.open = pre_candle.open

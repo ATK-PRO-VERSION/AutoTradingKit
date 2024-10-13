@@ -222,255 +222,11 @@ def zigzag(
 import numpy as np
 import pandas as pd
 from typing import List
-from PySide6.QtCore import Qt, Signal,QObject
-
+from psygnal import Signal
 from atklip.controls.ma_type import PD_MAType
 from atklip.controls.ohlcv import   OHLCV
 from atklip.controls.candle import JAPAN_CANDLE,HEIKINASHI,SMOOTH_CANDLE,N_SMOOTH_CANDLE
-from atklip.appmanager import CandleWorker
-
-
-
-class OLD_ZIGZAG(QObject):
-    sig_update_candle = Signal()
-    sig_add_candle = Signal()
-    sig_reset_all = Signal()
-    signal_delete = Signal()    
-    sig_add_historic = Signal() 
-    def __init__(self,parent,_candles,legs,deviation,retrace=False,last_extreme=False) -> None:
-        super().__init__(parent=parent)
-        self._candles: JAPAN_CANDLE|HEIKINASHI|SMOOTH_CANDLE|N_SMOOTH_CANDLE =_candles
-
-        self.legs :Int = legs
-        self.deviation: IntFloat = deviation
-        self.retrace: bool = retrace
-        self.last_extreme: bool = last_extreme
-        
-        # self.signal_delete.connect(self.deleteLater)
-        self.first_gen = False
-        self.is_genering = True
-        
-        self.name = f"ZIGZAG {self.legs} {self.deviation}"
-
-        self.df = pd.DataFrame([])
-        
-        self.xdata,self.zz_swing, self.zz_value, self.zz_dev  = np.array([]),np.array([]),np.array([]),np.array([])
-
-        self.connect_signals()
-        
-    def disconnect_signals(self):
-        try:
-            self._candles.sig_reset_all.disconnect(self.started_worker)
-            self._candles.sig_update_candle.disconnect(self.update_worker)
-            self._candles.sig_add_candle.disconnect(self.add_worker)
-            self._candles.signal_delete.disconnect(self.signal_delete)
-            self._candles.sig_add_historic.disconnect(self.add_historic_worker)
-        except RuntimeError:
-                    pass
-    
-    def connect_signals(self):
-        self._candles.sig_reset_all.connect(self.started_worker,Qt.ConnectionType.AutoConnection)
-        self._candles.sig_update_candle.connect(self.update_worker,Qt.ConnectionType.QueuedConnection)
-        self._candles.sig_add_candle.connect(self.add_worker,Qt.ConnectionType.QueuedConnection)
-        self._candles.signal_delete.connect(self.signal_delete)
-        self._candles.sig_add_historic.connect(self.add_historic_worker,Qt.ConnectionType.QueuedConnection)
-    
-    
-    def change_source(self,_candles:JAPAN_CANDLE|HEIKINASHI|SMOOTH_CANDLE|N_SMOOTH_CANDLE):
-        self.disconnect_signals()
-        self._candles =_candles
-        self.connect_signals()
-        self.started_worker()
-    
-    def change_inputs(self,_input:str,_source:str|int|JAPAN_CANDLE|HEIKINASHI|SMOOTH_CANDLE|N_SMOOTH_CANDLE|PD_MAType):
-        is_update = False
-        print(_input,_source)
-        
-        if _input == "source":
-            self.change_source(_source)
-            return
-        elif _input == "deviation":
-            self.deviation = _source
-            is_update = True
-        elif _input == "legs":
-            self.legs = _source
-            is_update = True
-        elif _input == "retrace":
-            self.retrace = _source
-            is_update = True
-        elif _input == "last_extreme":
-            self.last_extreme = _source
-            is_update = True
-        if is_update:
-            self.started_worker()
-    
-    @property
-    def indicator_name(self):
-        return self.name
-    @indicator_name.setter
-    def indicator_name(self,_name):
-        self.name = _name
-    
-    def get_df(self,n:int=None):
-        if not n:
-            return self.df
-        return self.df.tail(n)
-    
-    def get_data(self):
-        return self.xdata,self.zz_swing, self.zz_value, self.zz_dev
-    
-    def get_last_row_df(self):
-        return self.df.iloc[-1] 
-
-    def update_worker(self,candle):
-        self.worker_ = None
-        self.worker_ = CandleWorker(self.update,candle)
-        self.worker_.start()
-    
-    def add_worker(self,candle):
-        self.worker_ = None
-        self.worker_ = CandleWorker(self.add,candle)
-        self.worker_.start()
-    
-    def add_historic_worker(self,n):
-        self.worker_ = None
-        self.worker_ = CandleWorker(self.add_historic,n)
-        self.worker_.start()
-    
-    def started_worker(self):
-        self.worker = None
-        self.worker = CandleWorker(self.fisrt_gen_data)
-        self.worker.start()
-    
-    def paire_data(self,INDICATOR:pd.DataFrame|pd.Series):
-        column_names = INDICATOR.columns.tolist()
-        
-        zz_swing_name = ''
-        zz_value_name = ''
-        zz_dev_name = '' 
-        
-        for name in column_names:
-            if name.__contains__("ZIGZAGs"):
-                zz_swing_name = name
-            elif name.__contains__("ZIGZAGv"):
-                zz_value_name = name
-            elif name.__contains__("ZIGZAGd"):
-                zz_dev_name = name
-
-        zz_swing = INDICATOR[zz_swing_name]#.dropna()
-        zz_value = INDICATOR[zz_value_name]#.dropna()
-        zz_dev = INDICATOR[zz_dev_name]#.dropna()
-        zz_index = INDICATOR["index"]#.dropna()
-        return zz_index,zz_swing,zz_value,zz_dev
-    
-    def caculate(self,df: pd.DataFrame,_index: pd.Series):
-        
-        INDICATOR = zigzag(high=df["high"],
-                            low=df["low"],
-                            close=df["close"],
-                            legs = self.legs,
-                            deviation = self.deviation,
-                            retrace = self.retrace,
-                            last_extreme = self.last_extreme
-                            )#.dropna()
-        INDICATOR["index"] = _index
-        return self.paire_data(INDICATOR)
-    
-    def fisrt_gen_data(self):
-        self.is_genering = True
-        self.df = pd.DataFrame([])
-        df:pd.DataFrame = self._candles.get_df()
-        
-        _index = df["index"]
-        zz_index,zz_swing,zz_value,zz_dev = self.caculate(df,_index)
-
-        self.df = pd.DataFrame({
-                            'index':zz_index,
-                            "zz_swing":zz_swing,
-                            "zz_value":zz_value,
-                            "zz_dev":zz_dev
-                            })
-        INDICATOR = self.df[self.df['zz_value'].notna()]
-        self.xdata,self.zz_swing, self.zz_value, self.zz_dev = INDICATOR["index"].to_numpy(),\
-                                                                INDICATOR["zz_swing"].to_numpy(),\
-                                                                INDICATOR["zz_value"].to_numpy(),\
-                                                                INDICATOR["zz_dev"].to_numpy()
-        
-        self.is_genering = False
-        if self.first_gen == False:
-            self.first_gen = True
-            self.is_genering = False
-        self.sig_reset_all.emit()
-    
-    def add_historic(self,n:int):
-        self.is_genering = True
-        _pre_len = len(self.df)
-        df:pd.DataFrame = self._candles.get_df()
-        
-        
-        _index = df["index"]
-        zz_index,zz_swing,zz_value,zz_dev = self.caculate(df,_index)
-        
-        self.df = pd.DataFrame({
-                            'index':zz_index,
-                            "zz_swing":zz_swing,
-                            "zz_value":zz_value,
-                            "zz_dev":zz_dev
-                            })
-        INDICATOR = self.df[self.df['zz_value'].notna()]
-        self.xdata,self.zz_swing, self.zz_value, self.zz_dev = INDICATOR["index"].to_numpy(),\
-                                                                INDICATOR["zz_swing"].to_numpy(),\
-                                                                INDICATOR["zz_value"].to_numpy(),\
-                                                                INDICATOR["zz_dev"].to_numpy()
-        
-        self.is_genering = False
-        if self.first_gen == False:
-            self.first_gen = True
-            self.is_genering = False
-        
-        self.sig_add_historic.emit()
-    
-    def add(self,new_candles:List[OHLCV]):
-        new_candle:OHLCV = new_candles[-1]
-        if (self.first_gen == True) and (self.is_genering == False):
-            df:pd.DataFrame = self._candles.get_df()
-            
-            _index = df["index"]
-            zz_index,zz_swing,zz_value,zz_dev = self.caculate(df,_index)
-            
-            new_frame = pd.DataFrame({
-                                    'index':[new_candle.index],
-                                    "zz_swing":[zz_swing.iloc[-1]],
-                                    "zz_value":[zz_value.iloc[-1]],
-                                    "zz_dev":[zz_dev.iloc[-1]]
-                                    })
-            
-            self.df = pd.concat([self.df,new_frame],ignore_index=True)
-            
-            INDICATOR = self.df[self.df['zz_value'].notna()]
-            self.xdata,self.zz_swing, self.zz_value, self.zz_dev = INDICATOR["index"].to_numpy(),\
-                                                                INDICATOR["zz_swing"].to_numpy(),\
-                                                                INDICATOR["zz_value"].to_numpy(),\
-                                                                INDICATOR["zz_dev"].to_numpy()
-            
-            self.sig_add_candle.emit()
-        
-    def update(self, new_candles:List[OHLCV]):
-        new_candle:OHLCV = new_candles[-1]
-        if (self.first_gen == True) and (self.is_genering == False):
-            df:pd.DataFrame = self._candles.get_df()
-            _index = df["index"]
-            zz_index,zz_swing,zz_value,zz_dev = self.caculate(df,_index)
-            
-            self.df.iloc[-1] = [new_candle.index,zz_swing.iloc[-1],zz_value.iloc[-1],zz_dev.iloc[-1]]
-            
-            INDICATOR = self.df[self.df['zz_value'].notna()]
-            self.xdata,self.zz_swing, self.zz_value, self.zz_dev = INDICATOR["index"].to_numpy(),\
-                                                                INDICATOR["zz_swing"].to_numpy(),\
-                                                                INDICATOR["zz_value"].to_numpy(),\
-                                                                INDICATOR["zz_dev"].to_numpy()
-            self.sig_update_candle.emit()
-
+from atklip.app_api.workers import ApiThreadPool
 
 
 def caculate_zz(list_zizgzag:list,ohlcv:OHLCV,percent: float):
@@ -554,42 +310,65 @@ def my_zigzag(list_zizgzag:list=[],candles: List[OHLCV]=None,percent: float=0.5)
     return list_zizgzag
 
 
-class ZIGZAG(QObject):
+class ZIGZAG():
     sig_update_candle = Signal()
     sig_add_candle = Signal()
     sig_reset_all = Signal()
     signal_delete = Signal()    
     sig_add_historic = Signal() 
-    def __init__(self,parent=None,_candles=None,dict_ta_params: dict={}) -> None:
-        super().__init__(parent=parent)
+    def __init__(self,_candles=None,dict_ta_params: dict={}) -> None:
         self._candles: JAPAN_CANDLE|HEIKINASHI|SMOOTH_CANDLE|N_SMOOTH_CANDLE =_candles
-
-        self._dict_ta_params = dict_ta_params
         
-        self.legs :Int = self.dict_ta_params.get("legs") 
-        self.deviation: IntFloat = self.dict_ta_params.get("deviation")
-        self.retrace: bool = self.dict_ta_params.get("retrace",False) 
-        self.last_extreme: bool = self.dict_ta_params.get("last_extreme",False) 
+        self.legs :int = dict_ta_params.get("legs") 
+        self.deviation: float = dict_ta_params.get("deviation")
+        self.retrace: bool = dict_ta_params.get("retrace",False) 
+        self.last_extreme: bool = dict_ta_params.get("last_extreme",False) 
         
-        # self.signal_delete.connect(self.deleteLater)
         self.first_gen = False
         self.is_genering = True
         self.list_zizgzag:list = []
-        
+        self.is_current_update = False
+        self.is_histocric_load = False
         self.indicator_name = f"ZIGZAG {self.legs} {self.deviation}"
         
         self.df = pd.DataFrame([])
+        self.worker = ApiThreadPool
         
         self.x_data,self.y_data  = [],[]
 
         self.connect_signals()
-    
+    def change_input(self,candles=None,dict_ta_params: dict={}):
+        if candles != None:
+            self.disconnect_signals()
+            self._candles : JAPAN_CANDLE|HEIKINASHI|SMOOTH_CANDLE|N_SMOOTH_CANDLE= candles
+            self.connect_signals()
+        
+        if dict_ta_params != {}:
+            self.legs :int = dict_ta_params.get("legs") 
+            self.deviation: float = dict_ta_params.get("deviation")
+            self.retrace: bool = dict_ta_params.get("retrace",False) 
+            self.last_extreme: bool = dict_ta_params.get("last_extreme",False) 
+            
+            ta_name:str=dict_ta_params.get("ta_name")
+            obj_id:str=dict_ta_params.get("obj_id") 
+            
+            ta_param = f"{obj_id}-{ta_name}-{self.legs}-{self.deviation}"
+            
+
+            self.indicator_name = ta_param
+        
+        self.first_gen = False
+        self.is_genering = True
+        self.is_current_update = False
+        
+        self.started_worker()
+        
     @property
-    def dict_ta_params(self)-> dict:
-        return self._dict_ta_params
-    @dict_ta_params.setter
-    def dict_ta_params(self,dict_ta_params):
-        self._dict_ta_params = dict_ta_params
+    def source_name(self)-> str:
+        return self._source_name
+    @source_name.setter
+    def source_name(self,source_name):
+        self._source_name = source_name
     
     def disconnect_signals(self):
         try:
@@ -602,11 +381,11 @@ class ZIGZAG(QObject):
                     pass
     
     def connect_signals(self):
-        self._candles.sig_reset_all.connect(self.started_worker,Qt.ConnectionType.AutoConnection)
-        self._candles.sig_update_candle.connect(self.update_worker,Qt.ConnectionType.QueuedConnection)
-        self._candles.sig_add_candle.connect(self.add_worker,Qt.ConnectionType.QueuedConnection)
+        self._candles.sig_reset_all.connect(self.started_worker)
+        self._candles.sig_update_candle.connect(self.update_worker)
+        self._candles.sig_add_candle.connect(self.add_worker)
         self._candles.signal_delete.connect(self.signal_delete)
-        self._candles.sig_add_historic.connect(self.add_historic_worker,Qt.ConnectionType.QueuedConnection)
+        self._candles.sig_add_historic.connect(self.add_historic_worker)
     
     
     def change_source(self,_candles:JAPAN_CANDLE|HEIKINASHI|SMOOTH_CANDLE|N_SMOOTH_CANDLE):
@@ -614,28 +393,6 @@ class ZIGZAG(QObject):
         self._candles =_candles
         self.connect_signals()
         self.started_worker()
-    
-    def change_inputs(self,_input:str,_source:str|int|JAPAN_CANDLE|HEIKINASHI|SMOOTH_CANDLE|N_SMOOTH_CANDLE|PD_MAType):
-        is_update = False
-        print(_input,_source)
-        
-        if _input == "source":
-            self.change_source(_source)
-            return
-        elif _input == "deviation":
-            self.deviation = _source
-            is_update = True
-        elif _input == "legs":
-            self.legs = _source
-            is_update = True
-        elif _input == "retrace":
-            self.retrace = _source
-            is_update = True
-        elif _input == "last_extreme":
-            self.last_extreme = _source
-            is_update = True
-        if is_update:
-            self.started_worker()
     
     @property
     def indicator_name(self):
@@ -649,7 +406,9 @@ class ZIGZAG(QObject):
             return self.df
         return self.df.tail(n)
     
-    def get_data(self,start:int,stop:int):
+    def get_data(self,start:int=0,stop:int=0):
+        if self.x_data == []:
+            return {"x_data":[],"y_data":[]} 
         if start == 0 and stop == 0:
             x_data = self.x_data
             y_data = self.y_data
@@ -667,25 +426,18 @@ class ZIGZAG(QObject):
     def get_last_row_df(self):
         return self.df.iloc[-1] 
 
-    def update_worker(self,candle):
-        self.worker_ = None
-        self.worker_ = CandleWorker(self.update,candle)
-        self.worker_.start()
     
+    def update_worker(self,candle):
+        self.worker.submit(self.update(candle))
+
     def add_worker(self,candle):
-        self.worker_ = None
-        self.worker_ = CandleWorker(self.add,candle)
-        self.worker_.start()
+        self.worker.submit(self.add(candle))
     
     def add_historic_worker(self,n):
-        self.worker_ = None
-        self.worker_ = CandleWorker(self.add_historic,n)
-        self.worker_.start()
-    
+        self.worker.submit(self.add_historic(n))
+
     def started_worker(self):
-        self.worker = None
-        self.worker = CandleWorker(self.fisrt_gen_data)
-        self.worker.start()
+        self.worker.submit(self.fisrt_gen_data())
     
     def paire_data(self,list_zizgzag:list):
         if len(list_zizgzag) == 2:
@@ -720,6 +472,7 @@ class ZIGZAG(QObject):
         return self.paire_data(self.list_zizgzag)
     
     def fisrt_gen_data(self):
+        self.is_current_update = False
         self.is_genering = True
         self.df = pd.DataFrame([])
         
@@ -733,22 +486,28 @@ class ZIGZAG(QObject):
     
     def add_historic(self,n:int):
         self.is_genering = True
+        self.is_histocric_load = False
         self.x_data,self.y_data = self.caculate(self.list_zizgzag,self._candles.candles,"load")
         self.is_genering = False
         if self.first_gen == False:
             self.first_gen = True
             self.is_genering = False
+        self.is_histocric_load = True
         self.sig_add_historic.emit()
     
     def add(self,new_candles:List[OHLCV]):
+        self.is_current_update = False
         new_candle:OHLCV = new_candles[-1]
         if (self.first_gen == True) and (self.is_genering == False):
             self.x_data,self.y_data = self.caculate(self.list_zizgzag,self._candles.candles,"add")
             self.sig_add_candle.emit()
+            self.is_current_update = True
         
     def update(self, new_candles:List[OHLCV]):
         new_candle:OHLCV = new_candles[-1]
+        self.is_current_update = False
         if (self.first_gen == True) and (self.is_genering == False):
             self.x_data,self.y_data = self.caculate(self.list_zizgzag,self._candles.candles,"update")
             self.sig_update_candle.emit()
+            self.is_current_update = True
 
