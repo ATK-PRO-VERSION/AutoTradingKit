@@ -15,7 +15,6 @@ from pglive.sources.utils import NUM_LIST, NUM
 
 warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 
-
 class DataConnector(QtCore.QObject):
     sig_new_data = QtCore.Signal(object, object, dict)
     sig_data_roll_tick = QtCore.Signal(object, int)
