@@ -4,7 +4,6 @@ __pycache__/
 *$py.class
 *.pyx`
 # C extensions
-*.so
 *.c
 out/
 /out
