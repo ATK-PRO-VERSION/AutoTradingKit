@@ -17,12 +17,7 @@ from atklip.app_utils import *
 from atklip.appmanager.setting import AppConfig
 from atklip.appmanager.worker.threadpool import ThreadPoolExecutor_global,Heavy_ProcessPoolExecutor_global,num_threads
 
-if sys.platform == "darwin":
-    from PySide6.QtWidgets import QMainWindow as FramelessMainWindow
-elif sys.platform == "linux":
-    from .framelesswindow import LinuxFramelessMainWindow as FramelessMainWindow
-else:
-    from .framelesswindow import WindowsFramelessMainWindow as FramelessMainWindow
+from .framelesswindow import FramelessMainWindow
 
 class WindowBase(BackgroundAnimationWidget, FramelessMainWindow):
     """ Fluent window base class """
