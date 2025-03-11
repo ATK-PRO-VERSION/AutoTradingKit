@@ -121,12 +121,18 @@ activate venv: venv/scripts/activate
 
 install libs: pip install -r requirements.txt
 
-run mainwindow.py to start app: python mainwindow.py
+- Have to install pdf2image if your os system is MacOS or Linux/Ubuntu: https://pypi.org/project/pdf2image/ 
+- on MacOS: install : Brew https://brew.sh/ with cmd: 
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" 
+,then install poppler: brew install poppler
+- on Linux: conda install -c conda-forge poppler ,then install poppler:  pip install pdf2image
+
+run ATK.py to start app: python ATK.py or python3 ATK.py
 
 ## Build exe
 
-- Use pyinstaller to build
 - Convert py to pyd using cython
+- Use pyinstaller to build
 
 ## Roadmap 2025
 

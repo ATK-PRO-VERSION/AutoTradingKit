@@ -3,13 +3,13 @@ import sys,asyncio
 from typing import Union, TYPE_CHECKING
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QColor, QPainter
-from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout,QApplication, QStackedWidget,QWidget
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout,QApplication, QStackedWidget,QWidget
 
 from atklip.gui.qfluentwidgets import StackedWidget
 from atklip.gui.qfluentwidgets.common import CryptoIcon as CI
 from atklip.gui.qfluentwidgets.common import screen,FluentIconBase,qconfig, qrouter, FluentStyleSheet, isDarkTheme, BackgroundAnimationWidget
 from atklip.gui.qfluentwidgets.common.icon import *
-from qframelesswindow import FramelessMainWindow
+
 
 from .titlebar import TitleBar
 from .mainlayout import MainWidget
@@ -17,6 +17,12 @@ from atklip.app_utils import *
 from atklip.appmanager.setting import AppConfig
 from atklip.appmanager.worker.threadpool import ThreadPoolExecutor_global,Heavy_ProcessPoolExecutor_global,num_threads
 
+if sys.platform == "darwin":
+    from PySide6.QtWidgets import QMainWindow as FramelessMainWindow
+elif sys.platform == "linux":
+    from .framelesswindow import LinuxFramelessMainWindow as FramelessMainWindow
+else:
+    from .framelesswindow import WindowsFramelessMainWindow as FramelessMainWindow
 
 class WindowBase(BackgroundAnimationWidget, FramelessMainWindow):
     """ Fluent window base class """
@@ -24,28 +30,26 @@ class WindowBase(BackgroundAnimationWidget, FramelessMainWindow):
     def __init__(self, parent=None):
         self._isMicaEnabled = False
         super().__init__(parent=parent)
-        self.setTitleBar(TitleBar(self))
+        self.setWindowFlag(Qt.WindowMaximizeButtonHint, True)
+        self.setWindowFlag(Qt.WindowMinimizeButtonHint, True)
+        self.setWindowFlag(Qt.WindowCloseButtonHint, True)
+        self.setWindowFlag(Qt.WindowTitleHint, True)
+        self.setWindowFlag(Qt.FramelessWindowHint, True)
+
+        self.titleBar = TitleBar(self)
+        self.titleBar.setParent(self)
+
         self.tabBar = self.titleBar.tabBar
 
-        self.centralwg = QWidget(self)
-        self.hBoxLayout = QVBoxLayout(self.centralwg)
-        self.centralwg.setLayout(self.hBoxLayout)
-        self.hBoxLayout.setSpacing(0)
-        self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
-        self.setContentsMargins(0, 0, 0, 0)
+        self.setMenuWidget(self.titleBar)
 
-        self.setCentralWidget(self.centralwg)
+        self.setContentsMargins(0, 0, 0, 0)
 
         self.stackedWidget = QStackedWidget(self)
 
         self.stackedWidget.setContentsMargins(0,0,0,0)
+        self.setCentralWidget(self.stackedWidget)
 
-        self.hBoxLayout.addWidget(self.titleBar)
-        self.hBoxLayout.addWidget(self.stackedWidget)
-        
-        # enable mica effect on win11
-        self.setMicaEffectEnabled(False)
-        
         self.tabBar.currentChanged.connect(self.onTabChanged)
         self.tabBar.tabAddRequested.connect(self.onTabAddRequested)
         self.tabBar.tabCloseRequested.connect(self.onTabCloseRequested)

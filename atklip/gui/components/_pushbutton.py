@@ -736,10 +736,9 @@ class Candle_Button(BasePushButton):
         self._icon:FIF = icon
 
         self.set_icon_color()
-
+        # self.setToolTipDuration(1000)
+        self.installEventFilter(ToolTipFilter(self, 10, ToolTipPosition.TOP))
         self.setToolTip(name)
-        self.setToolTipDuration(1000)
-        self.installEventFilter(ToolTipFilter(self, 0, ToolTipPosition.TOP))
         FluentStyleSheet.BUTTON.apply(self)
 
     def set_icon_color(self):
@@ -767,9 +766,9 @@ class Favorite_Draw_Button(BasePushButton):
         self.setIconSize(QSize(25,25))
         self.setContentsMargins(5,5,5,5)
         self.clicked.connect(self.change_status_favorite_btn)
+        # self.setToolTipDuration(1000)
+        self.installEventFilter(ToolTipFilter(self, 10, ToolTipPosition.RIGHT))
         self.setToolTip("Show/hide favorite draw tools")
-        self.setToolTipDuration(1000)
-        self.installEventFilter(ToolTipFilter(self, 0, ToolTipPosition.RIGHT))
         self.change_status_favorite_btn()
 
     def _drawIcon(self, icon, painter, rect):
@@ -803,8 +802,7 @@ class Favorite_Button(BasePushButton):
     def __init__(self, icon:FIF,parent:QWidget):
         super().__init__(parent)
         self.clicked.connect(self.set_icon_color)
-        self.setToolTip("add to favorites")
-        self.setToolTipDuration(1000)
+        
         self.setIconSize(QSize(15, 15))
         icon_path = icon.path(Theme.DARK) if isDarkTheme() else icon.path(Theme.LIGHT)
         self.set_icon(icon_path)
@@ -813,7 +811,9 @@ class Favorite_Button(BasePushButton):
         self.setFixedSize(20,20)
         self.setContentsMargins(1,1,1,1)
         # self.button2.setToolTipDuration(-1)  # won't disappear
-        self.installEventFilter(ToolTipFilter(self, 0, ToolTipPosition.RIGHT))
+        self.installEventFilter(ToolTipFilter(self, 10, ToolTipPosition.RIGHT))
+        self.setToolTip("add to favorites")
+        # self.setToolTipDuration(1000)
         #self.set_icon_color()
     
     def reject_from_favorite(self):
@@ -846,8 +846,7 @@ class Help_Button(BasePushButton):
     def __init__(self, icon:FIF,parent:QWidget):
         super().__init__(parent)
         self.clicked.connect(self.set_icon_color)
-        self.setToolTip("What is this, read document!!!")
-        self.setToolTipDuration(1000)
+        
         self.setIconSize(QSize(15, 15))
         icon_path = icon.path(Theme.DARK) if isDarkTheme() else icon.path(Theme.LIGHT)
         self.set_icon(icon_path)
@@ -856,7 +855,9 @@ class Help_Button(BasePushButton):
         self.setFixedSize(20,20)
         self.setContentsMargins(1,1,1,1)
         # self.button2.setToolTipDuration(-1)  # won't disappear
-        self.installEventFilter(ToolTipFilter(self, 0, ToolTipPosition.RIGHT))
+        self.installEventFilter(ToolTipFilter(self, 10, ToolTipPosition.RIGHT))
+        self.setToolTip("What is this, read document!!!")
+        # self.setToolTipDuration(1000)
         #self.set_icon_color()
     def reject_from_favorite(self):
         self.setChecked(False)
@@ -891,8 +892,7 @@ class Hide_Show_Button(BasePushButton):
     def __init__(self, icon:FIF,parent:QWidget):
         super().__init__(parent)
         self.clicked.connect(self.set_icon_color)
-        self.setToolTip("What is this, read document!!!")
-        self.setToolTipDuration(1000)
+        
         self.setIconSize(QSize(35, 35))
         icon_path = icon.path(Theme.DARK) if isDarkTheme() else icon.path(Theme.LIGHT)
         self.set_icon(icon_path)
@@ -901,7 +901,9 @@ class Hide_Show_Button(BasePushButton):
         self.setFixedSize(35,35)
         self.setContentsMargins(0,0,0,0)
         # self.button2.setToolTipDuration(-1)  # won't disappear
-        self.installEventFilter(ToolTipFilter(self, 0, ToolTipPosition.RIGHT))
+        self.installEventFilter(ToolTipFilter(self, 10, ToolTipPosition.RIGHT))
+        self.setToolTip("What is this, read document!!!")
+        # self.setToolTipDuration(1000)
         #self.set_icon_color()
     def reject_from_favorite(self):
         self.setChecked(False)

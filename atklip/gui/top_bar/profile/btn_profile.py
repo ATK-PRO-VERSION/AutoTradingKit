@@ -18,7 +18,6 @@ class AvatarButton(QWidget):
         self.setLayout(layout)
         self.setMouseTracking(True)
         self.btn = ExchangeICon(self)
-        self.installEventFilter(ToolTipFilter(self.btn, 3000, ToolTipPosition.TOP_RIGHT))
         self.btn.setToolTip("About ATK")
         layout.addWidget(self.btn)
         self.btn.set_pixmap_icon(icon_path,35)

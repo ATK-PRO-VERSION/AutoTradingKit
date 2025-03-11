@@ -3,6 +3,7 @@ from PySide6.QtGui import QIcon, QPainter, QColor,QImage,QPixmap
 from PySide6.QtWidgets import QPushButton, QWidget
 from atklip.gui.qfluentwidgets.common.icon import FluentIcon as FIF, EchangeIcon as EI
 from atklip.gui.qfluentwidgets.common import isDarkTheme, Theme
+from atklip.gui.qfluentwidgets.components.widgets.tool_tip import ToolTipFilter, ToolTipPosition
 
 class ExchangeICon(QPushButton):
     def __init__(self, parent=None,icon_path="test.svg", size=30): #u":/qfluentwidgets/images/profiles/profile2.png"
@@ -24,7 +25,7 @@ class ExchangeICon(QPushButton):
                 background-color: #5A5A5A;
             }
         """ % (size // 2))
-        
+        self.installEventFilter(ToolTipFilter(self, 10, ToolTipPosition.BOTTOM_RIGHT))
         #self.set_pixmap_icon(icon_path)
 
     def set_pixmap_icon(self, icon_path,size=45):

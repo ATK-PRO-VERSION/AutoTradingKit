@@ -56,19 +56,19 @@ class TitleBar(MSFluentTitleBar):
         super().__init__(parent)
         # add buttons
         self._parent:WindowBase = self.parent()
-        self.toolButtonLayout = QHBoxLayout()
-        color = QColor(206, 206, 206) if isDarkTheme() else QColor(96, 96, 96)
+        # self.toolButtonLayout = QHBoxLayout()
+        # color = QColor(206, 206, 206) if isDarkTheme() else QColor(96, 96, 96)
         
         # self.forwardButton = TransparentToolButton(FIF.RIGHT_ARROW.icon(color=color), self)
         # self.backButton = TransparentToolButton(FIF.LEFT_ARROW.icon(color=color), self)
 
         # self.forwardButton.setDisabled(True)
-        self.toolButtonLayout.setContentsMargins(20, 0, 20, 0)
-        self.toolButtonLayout.setSpacing(15)
+        # self.toolButtonLayout.setContentsMargins(20, 0, 20, 0)
+        # self.toolButtonLayout.setSpacing(15)
 
         # self.toolButtonLayout.addWidget(self.backButton)
         # self.toolButtonLayout.addWidget(self.forwardButton)
-        self.hBoxLayout.insertLayout(4, self.toolButtonLayout)
+        # self.hBoxLayout.insertLayout(4, self.toolButtonLayout)
 
         # add tab bar
         self.tabBar = _TabBar(self)
@@ -81,13 +81,13 @@ class TitleBar(MSFluentTitleBar):
         self.tabBar.setScrollable(True)
         self.tabBar.setCloseButtonDisplayMode(TabCloseButtonDisplayMode.ON_HOVER)
 
-        self.hBoxLayout.insertWidget(5, self.tabBar, 1)
-        self.hBoxLayout.setStretch(6, 0)
+        self.hBoxLayout.insertWidget(4, self.tabBar, 1)
+        self.hBoxLayout.setStretch(5, 0)
         
         self.Donate_Btn = DonateBtn("Sponsor",self._parent)
         self.profile = AvatarButton(self._parent)
-        self.hBoxLayout.insertWidget(6,self.Donate_Btn, 0, Qt.AlignRight)
-        self.hBoxLayout.insertWidget(7,self.profile, 0, Qt.AlignRight)
+        self.hBoxLayout.insertWidget(5,self.Donate_Btn, 0, Qt.AlignRight)
+        self.hBoxLayout.insertWidget(6,self.profile, 0, Qt.AlignRight)
         
         FluentStyleSheet.TITLEBAR.apply(self)
 

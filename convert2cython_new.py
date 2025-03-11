@@ -11,7 +11,6 @@ def convert_to_cython(py_file):
                     print(pyd_name)
                     os.remove(pyd_name)
                     return None
-            
             cy_file = os.path.splitext(py_file)[0] + ".pyx"
             with open(cy_file, 'w',encoding="utf-8") as f:
                 f.write(py_code)
@@ -31,11 +30,18 @@ def convert_one(path_:str=r"atklip\graph_objects\chart_component\viewchart.py"):
         os.remove(_cpp_path)
     if os.path.exists(pyx_path):
         os.remove(pyx_path)
-"atklip/graphics/chart_component"
-"atklip/appmanager" "atklip/gui"
-_list_dirs = ["atklip/controls"]
-for dir in _list_dirs:
-    for root, _, files in os.walk(dir):
+
+list_dirs = ["atklip/graphics/chart_component",
+             "atklip/gui",
+             "atklip/gui/components",
+             "atklip/indicators",
+             "atklip/controls",
+             "atklip/app_api",
+             "atklip/app_utils",
+             "atklip/appmanager",
+             "atklip/appdata",]
+for folder in list_dirs:
+    for root, _, files in os.walk(folder):
         for file in files:
             src_path = os.path.join(root, file)
             # Bỏ qua thư mục __pycache__
@@ -54,21 +60,25 @@ for dir in _list_dirs:
                 continue
             elif "qfluentwidgets" in src_path:
                 continue
-            elif "app_api" in src_path:
-                continue
-            elif "app_utils" in src_path:
-                continue
+            # elif "app_api" in src_path:
+            #     continue
+            # elif "app_utils" in src_path:
+            #     continue
             elif "resource" in src_path:
                 continue
             elif src_path.endswith(".ui"):
                 continue
-            elif not src_path.endswith(".py"):
-                continue
+            # elif not src_path.endswith(".py"):
+            #     continue
             
-            # if src_path.endswith(".pyd"):
-            #     print("delete old",src_path)
-            #     os.remove(src_path)
+            if src_path.endswith(".pyd"):
+                print("delete old",src_path)
+                os.remove(src_path)
             
-            if src_path.endswith(".py"):
-                print(src_path)
-                convert_one(src_path)
+            if src_path.endswith(".so"):
+                print("delete old",src_path)
+                os.remove(src_path)
+            
+            # if src_path.endswith(".py"):
+            #     print(src_path)
+            #     convert_one(src_path)

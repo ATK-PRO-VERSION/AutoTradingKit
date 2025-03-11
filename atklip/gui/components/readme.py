@@ -1,3 +1,4 @@
+import sys
 from atklip.gui.qfluentwidgets.common.icon import get_real_path
 from PySide6.QtWidgets import QApplication, QLabel, QVBoxLayout, QWidget, QScrollArea
 from PySide6.QtGui import QPixmap
@@ -32,8 +33,11 @@ class ReadmeViewer(QWidget):
         self.vlayout.addWidget(self.scroll_area)
 
         readme_path:str = get_real_path("atklip/appdata/readme.pdf")
-        images = convert_from_path(readme_path,size=(800,1000))
 
+        if sys.platform == "win32":
+            images = convert_from_path(readme_path,size=(800,1000),poppler_path="bin")
+        else:
+            images = convert_from_path(readme_path,size=(800,1000))
         # Clear previous content
         for i in reversed(range(self.layout.count())):
             self.layout.itemAt(i).widget().setParent(None)

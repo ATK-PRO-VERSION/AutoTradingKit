@@ -1,3 +1,5 @@
+build exe bằng nuitka và upx : https://github.com/upx/upx
+https://pyarmor.dashingsoft.com/ pyamor
 ** khi build exe hãy thêm --hidden-import multiprocessing vào tham số pyinstaller
 
 API chứng khoán VN:

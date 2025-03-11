@@ -413,7 +413,7 @@ class ColorEditDrawTool(Color_Picker_Button):
         self.indicator = indicator
         self._input = _input
         self.setFixedSize(30,30)
-        self.installEventFilter(ToolTipFilter(self, 3000, ToolTipPosition.TOP))
+        self.installEventFilter(ToolTipFilter(self, 10, ToolTipPosition.TOP))
         self.load_color()
         self.colorChanged.connect(self.change_color)
 
@@ -436,7 +436,7 @@ class StyleEditDrawTool(ComboBox):
         self._input = _input
         
         self.set_values([("SolidLine",FIF.LINE),("DashLine",FIF.DASH_LINE),("DotLine",FIF.DOT_LINE)])
-        self.installEventFilter(ToolTipFilter(self, 3000, ToolTipPosition.TOP))
+        self.installEventFilter(ToolTipFilter(self, 10, ToolTipPosition.TOP))
         self.load_style()
         self.currentTextChanged.connect(self.change_style)
         self.setFixedSize(100,30)
@@ -476,7 +476,7 @@ class WidthEditDrawTool(ComboBox):
         self.indicator = indicator
         self._input = _input
         self.set_values([("1px ",FIF.ONE_PIX),("2px ",FIF.TWO_PIX),("3px ",FIF.THREE_PIX),("4px ",FIF.FOUR_PIX)])
-        self.installEventFilter(ToolTipFilter(self, 3000, ToolTipPosition.TOP))
+        self.installEventFilter(ToolTipFilter(self, 10, ToolTipPosition.TOP))
         self.load_value()
         self.currentTextChanged.connect(self.change_width)
         self.setFixedSize(60,30)

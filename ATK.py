@@ -73,14 +73,11 @@ if __name__ == '__main__':
         except:
             pass
     else:
-        
         try:
             import winloop 
             winloop.install()
         except:
             asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-    event = asyncio.get_event_loop_policy()
-    print(event)
     main()
     
     
