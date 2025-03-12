@@ -42,7 +42,7 @@ class BasicVTX(GraphicsObject):
 
         self._precision = self.chart._precision
         
-        self.has = {
+        self.has: dict = {
             "name": f"VTX 9 12 26",
             "y_axis_show":True,
             "inputs":{
@@ -105,7 +105,7 @@ class BasicVTX(GraphicsObject):
         self.chart_id = _chart_id
         
     @property
-    def model(self) -> dict:
+    def model(self):
         return VORTEXModel(self.id,"STOCHRSI",self.chart.jp_candle.source_name,
                         self.has["inputs"]["period"],
                         self.has["inputs"]["drift"]
@@ -138,7 +138,7 @@ class BasicVTX(GraphicsObject):
     
     def regen_indicator(self,setdata):
         xdata,vortex,signalma = self.INDICATOR.get_data()
-        self.has["name"] = f"VTX {self.has["inputs"]["period"]}"
+        self.has["name"] = f"""VTX {self.has["inputs"]["period"]}"""
         self.sig_change_indicator_name.emit(self.has["name"])
         setdata.emit((xdata,vortex,signalma))
         self.sig_change_yaxis_range.emit()
@@ -222,7 +222,7 @@ class BasicVTX(GraphicsObject):
                 self.has["inputs"][_input] = _source
                 update = True
         if update:
-            self.has["name"] = f"VTX {self.has["inputs"]["period"]}"
+            self.has["name"] = f"""VTX {self.has["inputs"]["period"]}"""
             self.sig_change_indicator_name.emit(self.has["name"])
             self.INDICATOR.change_input(dict_ta_params=self.model.__dict__)
             

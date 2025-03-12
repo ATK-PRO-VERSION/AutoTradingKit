@@ -39,7 +39,7 @@ class EMATrendMetter(GraphicsObject):
         self.chart:Chart = chart
         self._panel:ViewSubPanel = panel
         self.get_last_pos_worker = get_last_pos_worker
-        self.has = {
+        self.has: dict = {
             "name": f"EMATrendMetter 21 34 55",
             "y_axis_show":False,
             "inputs":{
@@ -93,7 +93,7 @@ class EMATrendMetter(GraphicsObject):
         self.chart_id = _chart_id
         
     @property
-    def model(self) -> dict:
+    def model(self):
         return EMATRENDMETTERModel(self.id,"EMA TREND METTER",self.has["inputs"]["source"].source_name,
                                     self.has["inputs"]["base_ema_length"],
                                     self.has["inputs"]["ema_length_1"],
@@ -135,7 +135,7 @@ class EMATrendMetter(GraphicsObject):
         x_data,uptrend,downtrend = self.INDICATOR.get_data()
         setdata.emit((x_data,uptrend,downtrend))
         
-        self.has["name"] = f"EMA_TREND_METTER {self.has["inputs"]["base_ema_length"]} {self.has["inputs"]["ema_length_1"]} {self.has["inputs"]["ema_length_2"]} {self.has["inputs"]["ema_length_3"]}"
+        self.has["name"] = f"""EMA_TREND_METTER {self.has["inputs"]["base_ema_length"]} {self.has["inputs"]["ema_length_1"]} {self.has["inputs"]["ema_length_2"]} {self.has["inputs"]["ema_length_3"]}"""
         self.sig_change_indicator_name.emit(self.has["name"])
         
     def replace_source(self):
@@ -181,7 +181,7 @@ class EMATrendMetter(GraphicsObject):
                 is_update = True
 
         if is_update:
-            self.has["name"] = f"EMA_TREND_METTER {self.has["inputs"]["base_ema_length"]} {self.has["inputs"]["ema_length_1"]} {self.has["inputs"]["ema_length_2"]} {self.has["inputs"]["ema_length_3"]}"
+            self.has["name"] = f"""EMA_TREND_METTER {self.has["inputs"]["base_ema_length"]} {self.has["inputs"]["ema_length_1"]} {self.has["inputs"]["ema_length_2"]} {self.has["inputs"]["ema_length_3"]}"""
             self.sig_change_indicator_name.emit(self.has["name"])
             self.INDICATOR.change_input(dict_ta_params=self.model.__dict__)
     

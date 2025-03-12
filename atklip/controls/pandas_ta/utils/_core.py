@@ -5,30 +5,29 @@ from io import StringIO
 from pathlib import Path
 from sys import float_info as sflt
 
-from numpy import argmax, argmin, finfo, float64
-from numba import njit
+from numpy import argmax, argmin
 from pandas import DataFrame, Series
 
-from atklip.controls.pandas_ta._typing import Array, Int, IntFloat, ListStr, Union
+from atklip.controls.pandas_ta._typing import Int, IntFloat, ListStr, Union
 from atklip.controls.pandas_ta.utils._validate import v_bool, v_pos_default, v_series
 from atklip.controls.pandas_ta.maps import Imports
 
-__all__ = [
-    "camelCase2Title",
-    "category_files",
-    "client_exists",
-    "ms2secs",
-    "nb_non_zero_range",
-    "non_zero_range",
-    "recent_maximum_index",
-    "recent_minimum_index",
-    "rma_pandas",
-    "signed_series",
-    "simplify_columns",
-    "speed_test",
-    "tal_ma",
-    "unsigned_differences",
-]
+
+# __all__ = [
+#     "camelCase2Title",
+#     "category_files",
+#     "client_exists",
+#     "ms2secs",
+#     "non_zero_range",
+#     "recent_maximum_index",
+#     "recent_minimum_index",
+#     "rma_pandas",
+#     "signed_series",
+#     "simplify_columns",
+#     "speed_test",
+#     "tal_ma",
+#     "unsigned_differences",
+# ]
 
 
 
@@ -65,13 +64,6 @@ def non_zero_range(high: Series, low: Series) -> Series:
         diff += sflt.epsilon
     return diff
 
-
-@njit(cache=True)
-def nb_non_zero_range(x, y):
-    diff = x - y
-    if diff.any() == 0:
-        diff += finfo(float64).eps
-    return diff
 
 
 def recent_maximum_index(x) -> Int:

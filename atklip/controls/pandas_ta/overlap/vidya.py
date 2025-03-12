@@ -2,7 +2,6 @@
 from numpy import nan
 from pandas import Series
 from atklip.controls.pandas_ta._typing import DictLike, Int
-from atklip.controls.pandas_ta.maps import Imports
 from atklip.controls.pandas_ta.utils import (
     v_drift,
     v_offset,
@@ -56,11 +55,7 @@ def vidya(
     m = close.size
     alpha = 2 / (length + 1)
 
-    if Imports["talib"] and mode_tal:
-        from atklip.controls.talib import CMO
-        cmo_ = CMO(close, length)
-    else:
-        cmo_ = _cmo(close, length, drift)
+    cmo_ = _cmo(close, length, drift)
     abs_cmo = cmo_.abs().astype(float)
 
     vidya = Series(0.0, index=close.index)

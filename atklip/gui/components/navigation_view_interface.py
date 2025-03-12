@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget
 
 from atklip.gui.qfluentwidgets.common import *
-# from .scroll_interface import ScrollInterface
+from atklip.gui.qfluentwidgets.components.navigation.pivot import PivotItem
 
 
 class PivotInterface(QWidget):
@@ -38,13 +38,24 @@ class PivotInterface(QWidget):
         # widget.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         self.stackedWidget.addWidget(widget)
         self.stackedWidget.setFixedHeight(widget.height())
-        self.pivot.addItem(
+        PivotItem = self.pivot.addItem(
             routeKey=objectName,
             text=text,
-            onClick=lambda: self.stackedWidget.setCurrentWidget(widget)
+            # onClick=lambda: self.stackedWidget.setCurrentWidget(widget)
         )
+        PivotItem.setObjectName(objectName)
+        PivotItem.itemClicked.connect(self.setcurentWidget)
+        
         _height_widget = widget.height() + self.pivot.height()
         self.setFixedHeight(_height_widget)
+
+    def setcurentWidget(self, _bool):
+        sender = self.sender()
+        if isinstance(sender, PivotItem):
+            objectName = sender.objectName()
+            widget = self.stackedWidget.findChild(QWidget, objectName)
+            if widget:
+                self.stackedWidget.setCurrentWidget(widget)
 
     def onCurrentIndexChanged(self, index):
         widget = self.stackedWidget.widget(index)

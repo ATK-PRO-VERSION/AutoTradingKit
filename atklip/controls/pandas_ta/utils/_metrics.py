@@ -8,19 +8,19 @@ from atklip.controls.pandas_ta.utils._validate import v_series
 from atklip.controls.pandas_ta.utils._math import linear_regression
 from atklip.controls.pandas_ta.utils._time import total_time
 
-__all__ = [
-    "cagr",
-    "calmar_ratio",
-    "downside_deviation",
-    "jensens_alpha",
-    "log_max_drawdown",
-    "max_drawdown",
-    "optimal_leverage",
-    "pure_profit_score",
-    "sharpe_ratio",
-    "sortino_ratio",
-    "volatility",
-]
+# __all__ = [
+#     "cagr",
+#     "calmar_ratio",
+#     "downside_deviation",
+#     "jensens_alpha",
+#     "log_max_drawdown",
+#     "max_drawdown",
+#     "optimal_leverage",
+#     "pure_profit_score",
+#     "sharpe_ratio",
+#     "sortino_ratio",
+#     "volatility",
+# ]
 
 
 
@@ -132,7 +132,7 @@ def max_drawdown(
 
     >>> result = ta.max_drawdown(close, method="dollar", all=False)
     """
-    from atklip.controls.pandas_ta.performance import drawdown
+    from atklip.controls.performance import drawdown
     close = v_series(close)
     max_dd = drawdown(close).max()
 
@@ -167,7 +167,7 @@ def optimal_leverage(
 
     >>> result = ta.optimal_leverage(close, benchmark_rate=0.0, log=False)
     """
-    from atklip.controls.pandas_ta.performance import log_return, percent_return
+    from atklip.controls.performance import log_return, percent_return
     close = v_series(close)
 
     use_cagr = kwargs.pop("use_cagr", False)
@@ -221,7 +221,7 @@ def sharpe_ratio(
 
     >>> result = ta.sharpe_ratio(close, benchmark_rate=0.0, log=False)
     """
-    from atklip.controls.pandas_ta.performance import log_return, percent_return
+    from atklip.controls.performance import log_return, percent_return
     close = v_series(close)
     if log:
         returns = log_return(close=close)
@@ -249,7 +249,7 @@ def sortino_ratio(
 
     >>> result = ta.sortino_ratio(close, benchmark_rate=0.0, log=False)
     """
-    from atklip.controls.pandas_ta.performance import log_return, percent_return
+    from atklip.controls.performance import log_return, percent_return
     close = v_series(close)
 
     if log:
@@ -278,7 +278,7 @@ def volatility(
 
     >>> result = ta.volatility(close, tf="years", returns=False, log=False)
     """
-    from atklip.controls.pandas_ta.performance import log_return, percent_return
+    from atklip.controls.performance import log_return, percent_return
     close = v_series(close)
 
     if not returns:

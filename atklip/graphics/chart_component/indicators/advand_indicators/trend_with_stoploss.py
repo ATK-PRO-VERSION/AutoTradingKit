@@ -37,8 +37,8 @@ class TrendStopLoss(GraphicsObject):
         # self.setFlag(self.GraphicsItemFlag.ItemHasNoContents)
         self.setFlag(self.GraphicsItemFlag.ItemUsesExtendedStyleOption,True)
         self.chart:Chart = chart
-        self.has = {
-            "name": f"BB 20 2",
+        self.has: dict = {
+            "name": "BB 20 2",
             "y_axis_show":False,
             "inputs":{
                     "source":self.chart.jp_candle,
@@ -99,7 +99,7 @@ class TrendStopLoss(GraphicsObject):
         self.chart_id = _chart_id
         
     @property
-    def model(self) -> dict:
+    def model(self):
         return TrendWithStopLossModel(self.id,"TrendStopLoss",self.chart.jp_candle.source_name,
                                         self.has["inputs"]["fast_period"],
                                         self.has["inputs"]["slow_period"],
@@ -143,7 +143,7 @@ class TrendStopLoss(GraphicsObject):
     def regen_indicator(self,setdata):
         x_data,long_stoploss,short_stoploss,Uptrend,Downtrend= self.INDICATOR.get_data()
         setdata.emit((x_data,long_stoploss,short_stoploss,Uptrend,Downtrend))
-        self.has["name"] = f"TrendSL {self.has["inputs"]["fast_period"]} {self.has["inputs"]["slow_period"]} {self.has["inputs"]["signal_period"]} {self.has["inputs"]["atr_length"]} {self.has["inputs"]["atr_multiplier"]} {self.has["inputs"]["atr_mamode"].name}"
+        self.has["name"] = f"""TrendSL {self.has["inputs"]["fast_period"]} {self.has["inputs"]["slow_period"]} {self.has["inputs"]["signal_period"]} {self.has["inputs"]["atr_length"]} {self.has["inputs"]["atr_multiplier"]} {self.has["inputs"]["atr_mamode"].name}"""
         self.sig_change_indicator_name.emit(self.has["name"])
         
     def replace_source(self):
@@ -197,7 +197,7 @@ class TrendStopLoss(GraphicsObject):
                 is_update = True
 
         if is_update:
-            self.has["name"] = f"TrendSL {self.has["inputs"]["fast_period"]} {self.has["inputs"]["slow_period"]} {self.has["inputs"]["signal_period"]} {self.has["inputs"]["atr_length"]} {self.has["inputs"]["atr_multiplier"]} {self.has["inputs"]["atr_mamode"].name}"
+            self.has["name"] = f"""TrendSL {self.has["inputs"]["fast_period"]} {self.has["inputs"]["slow_period"]} {self.has["inputs"]["signal_period"]} {self.has["inputs"]["atr_length"]} {self.has["inputs"]["atr_multiplier"]} {self.has["inputs"]["atr_mamode"].name}"""
             self.sig_change_indicator_name.emit(self.has["name"])
             self.INDICATOR.change_input(dict_ta_params=self.model.__dict__)
     

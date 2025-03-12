@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from atklip.controls import atr,bbands,kc,donchian
+from atklip.controls.pandas_ta import atr,bbands,kc,donchian
 from atklip.app_utils.helpers import crossover
 
 def utsignal(data,a,c):
@@ -125,7 +125,7 @@ def utbot_with_bb(data,key_value = 1,atr_utbot_length=10, mult = 1, wicks=False,
 import numpy as np
 import pandas as pd
 
-from atklip.controls import atr
+from atklip.controls.pandas_ta import atr
 from atklip.controls.ma_overload import ema, ma
 
 import numpy as np

@@ -51,7 +51,7 @@ class CANDLES(HWIDGET):
         if self.list_old_favorites == None:
             AppConfig.sig_set_single_data.emit((f"topbar.candle.favorite",[]))
             self.list_old_favorites = AppConfig.get_config_value(f"topbar.candle.favorite")
-        if self.list_old_favorites != []:
+        if self.list_old_favorites:
             for item_name in self.list_old_favorites:
                 item = self.findChild(Candle_Item,item_name)
                 if isinstance(item,Candle_Item):

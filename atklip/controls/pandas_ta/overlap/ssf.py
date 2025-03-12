@@ -1,43 +1,9 @@
 # -*- coding: utf-8 -*-
-from numpy import copy, cos, exp, zeros_like
-from numba import njit
 from pandas import Series
-from atklip.controls.pandas_ta._typing import Array, DictLike, Int, IntFloat
+from atklip.controls.pandas_ta._typing import DictLike, Int, IntFloat
 from atklip.controls.pandas_ta.utils import v_bool, v_offset, v_pos_default, v_series
+from atklip.controls.pandas_ta.utils._numba import nb_ssf, nb_ssf_everget
 
-
-
-# Ehler's Super Smoother Filter
-# http://traders.com/documentation/feedbk_docs/2014/01/traderstips.html
-@njit(cache=True)
-def nb_ssf(x, n, pi, sqrt2):
-    m, ratio, result = x.size, sqrt2 / n, copy(x)
-    a = exp(-pi * ratio)
-    b = 2 * a * cos(180 * ratio)
-    c = a * a - b + 1
-
-    # result[:2] = x[:2]
-    for i in range(2, m):
-        result[i] = 0.5 * c * (x[i] + x[i - 1]) + b * result[i - 1] \
-            - a * a * result[i - 2]
-
-    return result
-
-
-# John F. Ehler's Super Smoother Filter by Everget (2 poles), Tradingview
-# https://www.tradingview.com/script/VdJy0yBJ-Ehlers-Super-Smoother-Filter/
-@njit(cache=True)
-def nb_ssf_everget(x, n, pi, sqrt2):
-    m, arg, result = x.size, pi * sqrt2 / n, copy(x)
-    a = exp(-arg)
-    b = 2 * a * cos(arg)
-
-    # result[:2] = x[:2]
-    for i in range(2, m):
-        result[i] = 0.5 * (a * a - b + 1) * (x[i] + x[i - 1]) \
-            + b * result[i - 1] - a * a * result[i - 2]
-
-    return result
 
 
 def ssf(

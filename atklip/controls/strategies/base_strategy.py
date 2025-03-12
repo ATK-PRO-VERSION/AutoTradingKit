@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 
-from atklip.controls import atr
 from atklip.controls.ma_overload import ema, ma
 
 import numpy as np

@@ -30,7 +30,7 @@ class OptimationLine(GraphicsObject):
 
         precision = 1
         
-        self.has = {
+        self.has: dict = {
             "name": f"Optimation Line",
             "y_axis_show":False,
             "inputs":{
@@ -284,7 +284,7 @@ class SuperTrendLine(GraphicsObject):
 
         precision = 1
         
-        self.has = {
+        self.has: dict = {
             "name": f"Optimation Line",
             "y_axis_show":False,
             "inputs":{
@@ -542,7 +542,7 @@ class TrendLine(GraphicsObject):
 
         precision = 1
         
-        self.has = {
+        self.has: dict = {
             "name": f"Optimation Line",
             "y_axis_show":False,
             "inputs":{

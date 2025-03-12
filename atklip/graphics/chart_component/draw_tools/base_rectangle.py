@@ -1,12 +1,12 @@
 # import sys
 # from numpy.array_api import atan2
-from pyqtgraph import ROI
+from atklip.graphics.pyqtgraph import ROI
 from PySide6.QtGui import QPainter,QPicture
 from PySide6.QtCore import Signal, Qt,QRectF,QPointF
 
 from atklip.app_utils.functions import mkBrush, mkColor, mkPen
 from .roi import BaseHandle
-from pyqtgraph.graphicsItems.ROI import Handle
+from atklip.graphics.pyqtgraph.graphicsItems.ROI import Handle
 
 class posHandle(Handle):
     def __init__(self, radius, typ=None, pen=(200, 200, 220),
@@ -28,7 +28,7 @@ class BaseRect(ROI):
         ROI.__init__(self, pos, size, **args)
         self.setFlag(self.GraphicsItemFlag.ItemUsesExtendedStyleOption,True)
         self.setFlag(self.GraphicsItemFlag.ItemSendsGeometryChanges,False)
-        self.has = {
+        self.has: dict = {
             "styles":{
                     'pen': None,
                     'brush': mkBrush((43, 106, 255, 40)),

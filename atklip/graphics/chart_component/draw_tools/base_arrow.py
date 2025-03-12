@@ -56,7 +56,7 @@ class BaseArrowItem(QGraphicsPathItem):
         self.chart:Chart = self.drawtool.chart
         
         
-        self.has = {
+        self.has: dict = {
             "x_axis_show":True,
             "name": "rectangle",
             "type": "drawtool",

@@ -4,7 +4,7 @@ from atklip.controls.pandas_ta._typing import Array, IntFloat, Number, Union
 from atklip.controls.pandas_ta.maps import Imports
 from atklip.controls.pandas_ta.utils import hpoly
 
-__all__ = ["inv_norm"]
+# __all__ = ["inv_norm"]
 
 
 

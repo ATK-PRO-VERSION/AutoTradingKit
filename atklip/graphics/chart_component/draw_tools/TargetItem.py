@@ -585,7 +585,7 @@ class TextBoxROI(UIGraphicsItem):
         self.update_html(self.color, self.font_size)
         self.setBrush(QColor("#1ec2f4"))
         
-        self.has = {
+        self.has: dict = {
             "x_axis_show":False,
             "name": "rectangle",
             "type": "drawtool",
@@ -998,7 +998,7 @@ class ArrowItem(UIGraphicsItem):
 
         self._pos:Point = None
         
-        self.has = {
+        self.has: dict = {
             "x_axis_show":True,
             "name": "rectangle",
             "type": "drawtool",

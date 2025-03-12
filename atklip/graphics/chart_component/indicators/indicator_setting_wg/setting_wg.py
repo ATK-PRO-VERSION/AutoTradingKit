@@ -217,7 +217,7 @@ class SettingWidget(PivotInterface):
 
 class IndicatorSettingMenu(MovingWidget):
     def __init__(self,indicator,parent:QWidget=None,chart=None):
-        super(IndicatorSettingMenu, self).__init__(parent,f"Setting {indicator.has["name"]}")
+        super(IndicatorSettingMenu, self).__init__(parent,f"""Setting {indicator.has["name"]}""")
         self.title.btn_close.clicked.connect(self.deleteLater,Qt.ConnectionType.AutoConnection)
         "change title"
         indicator.sig_change_indicator_name.connect(self.change_title,Qt.ConnectionType.AutoConnection)

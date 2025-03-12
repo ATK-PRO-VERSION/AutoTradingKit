@@ -28,7 +28,7 @@ class Volume(GraphicsObject):
         self.chart:Chart = chart
         self._panel:ViewSubPanel = panel
         precision = 1
-        self.has = {
+        self.has: dict = {
             "name": f"Volume",
             "y_axis_show":True,
             "inputs":{

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from pandas import Series
 from atklip.controls.pandas_ta._typing import DictLike, Int
-from atklip.controls.pandas_ta.maps import Imports
 from atklip.controls.pandas_ta.utils import v_offset, v_pos_default, v_series, v_talib
 from .ema import ema
 
@@ -43,15 +42,10 @@ def tema(
     mode_tal = v_talib(talib)
     offset = v_offset(offset)
 
-    # Calculate
-    if Imports["talib"] and mode_tal:
-        from atklip.controls.talib import TEMA
-        tema = TEMA(close, length)
-    else:
-        ema1 = ema(close=close, length=length, talib=mode_tal, **kwargs)
-        ema2 = ema(close=ema1, length=length, talib=mode_tal, **kwargs)
-        ema3 = ema(close=ema2, length=length, talib=mode_tal, **kwargs)
-        tema = 3 * (ema1 - ema2) + ema3
+    ema1 = ema(close=close, length=length, talib=mode_tal, **kwargs)
+    ema2 = ema(close=ema1, length=length, talib=mode_tal, **kwargs)
+    ema3 = ema(close=ema2, length=length, talib=mode_tal, **kwargs)
+    tema = 3 * (ema1 - ema2) + ema3
 
     # Offset
     if offset != 0:

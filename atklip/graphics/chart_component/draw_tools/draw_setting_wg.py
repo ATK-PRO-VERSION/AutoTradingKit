@@ -201,7 +201,7 @@ class SettingWidget(PivotInterface):
 
 class DrawSettingMenu(MovingWidget):
     def __init__(self,tool,parent:QWidget=None,chart=None):
-        super(DrawSettingMenu, self).__init__(parent,f"Setting {tool.has["name"]}")
+        super(DrawSettingMenu, self).__init__(parent,f"""Setting {tool.has["name"]}""")
         self.title.btn_close.clicked.connect(self.deleteLater,Qt.ConnectionType.AutoConnection)
         "change title"
         # tool.sig_change_tool_name.connect(self.change_title,Qt.ConnectionType.AutoConnection)

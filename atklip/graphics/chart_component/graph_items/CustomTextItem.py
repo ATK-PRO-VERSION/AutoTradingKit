@@ -287,7 +287,7 @@ class CenteredTextItem(QtWidgets.QGraphicsTextItem):
         self.setPos(*pos)
         self.setFlag(self.GraphicsItemFlag.ItemIgnoresTransformations)
         
-        self.has = {
+        self.has: dict = {
             "x_axis_show":True,
             "name": "rectangle",
             "type": "drawtool",

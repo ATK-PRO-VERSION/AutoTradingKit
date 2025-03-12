@@ -41,7 +41,7 @@ class BasicSTOCHRSI(GraphicsObject):
 
         self._precision = self.chart._precision
         
-        self.has = {
+        self.has: dict = {
             "name": f"STOCHRSI 9 12 26",
             "y_axis_show":True,
             "inputs":{
@@ -118,7 +118,7 @@ class BasicSTOCHRSI(GraphicsObject):
         self.chart_id = _chart_id
         
     @property
-    def model(self) -> dict:
+    def model(self):
         return STOCHRSIModel(self.id,"STOCHRSI",self.chart.jp_candle.source_name,
                         self.has["inputs"]["rsi_period"],
                         self.has["inputs"]["period"],
@@ -161,7 +161,7 @@ class BasicSTOCHRSI(GraphicsObject):
 
     def regen_indicator(self,setdata):
         xdata,stochrsi,signalma= self.INDICATOR.get_data()  
-        self.has["name"] = f"STOCHRSI {self.has["inputs"]["mamode"].name} {self.has["inputs"]["period"]} {self.has["inputs"]["k_period"]} {self.has["inputs"]["d_period"]} {self.has["inputs"]["type"]}"
+        self.has["name"] = f"""STOCHRSI {self.has["inputs"]["mamode"].name} {self.has["inputs"]["period"]} {self.has["inputs"]["k_period"]} {self.has["inputs"]["d_period"]} {self.has["inputs"]["type"]}"""
         self.sig_change_indicator_name.emit(self.has["name"])
         setdata.emit((xdata,stochrsi,signalma))
         self.sig_change_yaxis_range.emit()
@@ -198,7 +198,7 @@ class BasicSTOCHRSI(GraphicsObject):
                 self.has["inputs"][_input] = _source
                 update = True
         if update:
-            self.has["name"] = f"STOCHRSI {self.has["inputs"]["mamode"].name} {self.has["inputs"]["period"]} {self.has["inputs"]["k_period"]} {self.has["inputs"]["d_period"]} {self.has["inputs"]["type"]}"
+            self.has["name"] = f"""STOCHRSI {self.has["inputs"]["mamode"].name} {self.has["inputs"]["period"]} {self.has["inputs"]["k_period"]} {self.has["inputs"]["d_period"]} {self.has["inputs"]["type"]}"""
             self.sig_change_indicator_name.emit(self.has["name"])
             self.INDICATOR.change_input(dict_ta_params=self.model.__dict__)
 

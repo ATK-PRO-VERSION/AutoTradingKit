@@ -40,8 +40,8 @@ class SMC(GraphicsObject):
         self.setFlag(self.GraphicsItemFlag.ItemUsesExtendedStyleOption,True)
         
         self.chart:Chart = chart
-        self.has = {
-            "name": f"SMC Ver_1.0",
+        self.has: dict = {
+            "name": "SMC Ver_1.0",
             "y_axis_show":False,
             
             "inputs":{
@@ -92,7 +92,7 @@ class SMC(GraphicsObject):
         self.chart_id = _chart_id
 
     @property
-    def model(self) -> dict:
+    def model(self):
         return SMCModel(self.id,"SMC",self.has["inputs"]["source"].source_name,
                         self.has["inputs"]["window"],
                         self.has["inputs"]["swing_length"],
@@ -140,7 +140,7 @@ class SMC(GraphicsObject):
         data:dict= self.INDICATOR.get_data()
         setdata.emit(data)
         self.sig_change_yaxis_range.emit()
-        self.has["name"] = f"SMC {self.has['inputs']['window']}"
+        self.has["name"] = f"""SMC {self.has['inputs']['window']}"""
         self.sig_change_indicator_name.emit(self.has["name"])
         
     def replace_source(self):
@@ -179,7 +179,7 @@ class SMC(GraphicsObject):
                 is_update = True
         
         if is_update:
-            self.has["name"] = f"SMC"
+            self.has["name"] = "SMC"
             self.sig_change_indicator_name.emit(self.has["name"])
             self.INDICATOR.change_input(dict_ta_params=self.model.__dict__)
     

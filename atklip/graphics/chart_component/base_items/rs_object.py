@@ -1,11 +1,11 @@
-from pyqtgraph import *
-from pyqtgraph import functions as fn
+from atklip.graphics.pyqtgraph import *
+from atklip.graphics.pyqtgraph import functions as fn
 from typing import Tuple, List, Dict
 import numpy as np
 from numpy import ndarray
 from PySide6.QtGui import QPainter, QPainterPath, QKeyEvent, QColor, QTransform,QFont
 from PySide6.QtCore import Qt
-from pyqtgraph.Point import Point
+from atklip.graphics.pyqtgraph.Point import Point
 
 class RSObject(ROI):
     def __init__(self, pos, size=..., angle=0, invertible=False, maxBounds=None, snapSize=1, scaleSnap=False, translateSnap=False, rotateSnap=False, parent=None, pen=None, hoverPen=None, handlePen=None, handleHoverPen=None, movable=False, rotatable=True, resizable=True, removable=True, aspectLocked=False,type_rs=None):

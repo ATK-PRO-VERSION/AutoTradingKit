@@ -41,7 +41,7 @@ class BasicTRIX(GraphicsObject):
 
         self._precision = self.chart._precision
         
-        self.has = {
+        self.has: dict = {
             "name": f"TRIX 9 12 26",
             "y_axis_show":True,
             "inputs":{
@@ -107,7 +107,7 @@ class BasicTRIX(GraphicsObject):
         self.chart_id = _chart_id
         
     @property
-    def model(self) -> dict:
+    def model(self):
         return TRIXModel(self.id,"STOCHRSI",self.chart.jp_candle.source_name,
                         self.has["inputs"]["length_period"],
                         self.has["inputs"]["signal_period"],
@@ -149,7 +149,7 @@ class BasicTRIX(GraphicsObject):
     def regen_indicator(self,setdata):
         xdata,trix,signalma= self.INDICATOR.get_data()  
         
-        self.has["name"] = f"TRIX {self.has["inputs"]["mamode"].name} {self.has["inputs"]["length_period"]} {self.has["inputs"]["signal_period"]} {self.has["inputs"]["type"]}"
+        self.has["name"] = f"""TRIX {self.has["inputs"]["mamode"].name} {self.has["inputs"]["length_period"]} {self.has["inputs"]["signal_period"]} {self.has["inputs"]["type"]}"""
         self.sig_change_indicator_name.emit(self.has["name"])
         setdata.emit((xdata,trix,signalma))
         self.sig_change_yaxis_range.emit()
@@ -178,7 +178,7 @@ class BasicTRIX(GraphicsObject):
                 self.has["inputs"][_input] = _source
                 update = True
         if update:
-            self.has["name"] = f"TRIX {self.has["inputs"]["mamode"].name} {self.has["inputs"]["length_period"]} {self.has["inputs"]["signal_period"]} {self.has["inputs"]["type"]}"
+            self.has["name"] = f"""TRIX {self.has["inputs"]["mamode"].name} {self.has["inputs"]["length_period"]} {self.has["inputs"]["signal_period"]} {self.has["inputs"]["type"]}"""
             self.sig_change_indicator_name.emit(self.has["name"])
             self.INDICATOR.change_input(dict_ta_params=self.model.__dict__)
 

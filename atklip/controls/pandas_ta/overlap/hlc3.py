@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from pandas import Series
 from atklip.controls.pandas_ta._typing import DictLike, Int
-from atklip.controls.pandas_ta.maps import Imports
 from atklip.controls.pandas_ta.utils import v_offset, v_series, v_talib
 
 
@@ -37,13 +36,8 @@ def hlc3(
     if high is None or low is None or close is None:
         return
 
-    # Calculate
-    if Imports["talib"] and mode_tal and close.size:
-        from atklip.controls.talib import TYPPRICE
-        hlc3 = TYPPRICE(high, low, close)
-    else:
-        avg = (high.to_numpy() + low.to_numpy() + close.to_numpy()) / 3.0
-        hlc3 = Series(avg, index=close.index)
+    avg = (high.to_numpy() + low.to_numpy() + close.to_numpy()) / 3.0
+    hlc3 = Series(avg, index=close.index)
 
     # Offset
     if offset != 0:

@@ -92,7 +92,7 @@ class CandleButton(SplitWidgetBase):
             button.hide()
             if button.objectName() == self.old_actice_btn:
                     self.setcurrent_item(button)
-            if self.list_old_favorites != []:
+            if self.list_old_favorites:
                 if button.objectName() in self.list_old_favorites:
                     self.favorites.append(button)
                     button.show()

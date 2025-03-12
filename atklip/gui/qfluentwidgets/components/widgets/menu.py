@@ -705,7 +705,7 @@ class RoundMenu(QMenu):
         return self._actions
 
     def mousePressEvent(self, e):
-        w = self.childAt(e.pos())
+        w = self.childAt(e.position())
         if (w is not self.view) and (not self.view.isAncestorOf(w)):
             self._hideMenu(True)
 

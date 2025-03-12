@@ -31,7 +31,7 @@ class BaseLine(GraphicsObject):
 
         precision = 1
         
-        self.has = {
+        self.has: dict = {
             "name": f"",
             "y_axis_show":False,
             "inputs":{

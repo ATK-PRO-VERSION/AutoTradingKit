@@ -38,7 +38,7 @@ class VolumeWithMA(GraphicsObject):
         self._panel:ViewSubPanel = panel
 
         
-        self.has = {
+        self.has: dict = {
             "name": f"Volume",
             "y_axis_show":False,
             "inputs":{
@@ -105,7 +105,7 @@ class VolumeWithMA(GraphicsObject):
         self.chart_id = _chart_id
         
     @property
-    def model(self) -> dict:
+    def model(self):
         return MAModel(self.id,"MA",self.chart.jp_candle.source_name,self.has["inputs"]["mamode"].name.lower(),
                               self.has["inputs"]["type"],self.has["inputs"]["length"])
     
@@ -144,7 +144,7 @@ class VolumeWithMA(GraphicsObject):
         x_data,y_data,_open, close, volume = self.INDICATOR.get_data()
         setdata.emit((x_data,y_data,_open, close, volume))
         self.sig_change_yaxis_range.emit()
-        self.has["name"] = f"{self.has["inputs"]["mamode"].name} {self.has["inputs"]["length"]} {self.has["inputs"]["type"]}"
+        self.has["name"] = f"""{self.has["inputs"]["mamode"].name} {self.has["inputs"]["length"]} {self.has["inputs"]["type"]}"""
         self.sig_change_indicator_name.emit(self.has["name"])
 
     def replace_source(self):
@@ -189,7 +189,7 @@ class VolumeWithMA(GraphicsObject):
                 self.has["inputs"][_input] = _source
                 is_update = True
         if is_update:
-            self.has["name"] = f"{self.has["inputs"]["mamode"].name} {self.has["inputs"]["length"]} {self.has["inputs"]["type"]}"
+            self.has["name"] = f"""{self.has["inputs"]["mamode"].name} {self.has["inputs"]["length"]} {self.has["inputs"]["type"]}"""
             self.sig_change_indicator_name.emit(self.has["name"])
             
             self.INDICATOR.change_input(dict_ta_params=self.model.__dict__)

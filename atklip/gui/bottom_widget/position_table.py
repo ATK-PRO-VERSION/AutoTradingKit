@@ -348,7 +348,7 @@ class PositionTable(TableView):
     
     def mouseMoveEvent(self,ev:QMouseEvent):
         super().mouseMoveEvent(ev)
-        pos = ev.pos()
+        pos = ev.position()
         index = self.indexAt(pos)
         self.row_hover = index.row()
         self.delegate.setHoverRow(index.row())

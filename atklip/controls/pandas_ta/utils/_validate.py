@@ -14,29 +14,29 @@ from atklip.controls.pandas_ta._typing import (
     np_integer
 )
 
-__all__ = [
-    "is_percent",
-    "v_ascending",
-    "v_bool",
-    "v_dataframe",
-    "v_datetime_ordered",
-    "v_drift",
-    "v_float",
-    "v_int",
-    "v_list",
-    "v_lowerbound",
-    "v_mamode",
-    "v_offset",
-    "v_pos_default",
-    "v_scalar",
-    "v_series",
-    "v_str",
-    "v_talib",
-    "v_tradingview",
-    "v_upperbound",
-    "verify_series",
-    "get_offset"
-]
+# __all__ = [
+#     "is_percent",
+#     "v_ascending",
+#     "v_bool",
+#     "v_dataframe",
+#     "v_datetime_ordered",
+#     "v_drift",
+#     "v_float",
+#     "v_int",
+#     "v_list",
+#     "v_lowerbound",
+#     "v_mamode",
+#     "v_offset",
+#     "v_pos_default",
+#     "v_scalar",
+#     "v_series",
+#     "v_str",
+#     "v_talib",
+#     "v_tradingview",
+#     "v_upperbound",
+#     "verify_series",
+#     "get_offset"
+# ]
 
 
 
@@ -79,10 +79,10 @@ def v_int(var: Int, default: Int, ne: Optional[Int] = 0) -> Int:
 
 
 def v_str(var: str, default: str) -> str:
-    """"Returns the default value if var is not a empty str"""
+    """Returns the default value if var is not an empty str"""
     if isinstance(var, str) and len(var) > 0:
-        return f"{var}"
-    return f"{default}"
+        return var.encode('utf-8').decode('utf-8')
+    return default.encode('utf-8').decode('utf-8')
 
 
 def v_ascending(var: bool) -> bool:
@@ -137,7 +137,9 @@ def v_lowerbound(
     return default
 
 
-def v_mamode(var: str, default: str) -> str: # Could be an alias.
+def v_mamode(var: Optional[str|None], default: str) -> str: # Could be an alias.
+    if not var:
+        return default.encode('utf-8').decode('utf-8')
     return v_str(var, default)
 
 

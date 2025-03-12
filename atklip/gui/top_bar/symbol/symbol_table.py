@@ -314,21 +314,21 @@ class PositionModel(QAbstractTableModel):
     def data(self, index: QModelIndex, role):
         "để thêm các vai trò cho cell, column, row theo dựa vào index, quy định nội dung và cách thức hiện thị cho bảng"
         if self._data:
-            if role == Qt.CheckStateRole:
+            if role == Qt.ItemDataRole.CheckStateRole:
                 state = self._data[index.row()][7] 
                 return Qt.CheckState.Checked if (state == Qt.CheckState.Checked) else Qt.CheckState.Unchecked
                 
-            elif role == Qt.DisplayRole:
+            elif role == Qt.ItemDataRole.DisplayRole:
                 if index.column() == 2:
                     return self._data[index.row()][2]
                 elif index.column() == 3:
                     return self._data[index.row()][3]
-            elif role == Qt.TextAlignmentRole:
+            elif role == Qt.ItemDataRole.TextAlignmentRole:
                 "Thiết lập căn chỉnh lề cho từng cột"
                 if index.column() == 2:
-                    return Qt.AlignVCenter|Qt.AlignLeft
+                    return Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft
                 elif index.column() == 3:
-                    return Qt.AlignVCenter|Qt.AlignRight
+                    return Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight
 
     def flags(self, index):
         # Cho phép cell có thể được check/uncheck
@@ -383,7 +383,7 @@ class BaseMenu(TableView):
             if self.dict_favorites == None:
                 AppConfig.sig_set_single_data.emit((f"topbar.symbol.favorite",{}))
                 self.dict_favorites = {}
-            if self.dict_favorites != {}:
+            if self.dict_favorites:
                 for exchange_id in list(self.dict_favorites.keys()):
                     dict_data = self.dict_favorites.get(exchange_id,[]) 
                     if dict_data != []:
@@ -440,10 +440,10 @@ class BaseMenu(TableView):
         self.table_model.filterData(keyword)
     
     def get_symbols(self,exchange_id="binance"):
-        dict_data:list = AppConfig.get_config_value(f"topbar.symbol.{exchange_id}",[])
-        dict_favorites:list = AppConfig.get_config_value(f"topbar.symbol.favorite",[])
+        dict_data = AppConfig.get_config_value(f"topbar.symbol.{exchange_id}")
+        dict_favorites = AppConfig.get_config_value(f"topbar.symbol.favorite")
         if exchange_id != "favorite":
-            if dict_data == []:
+            if not dict_data:
                 crypto_ex = CryptoExchange()
                 exchange = crypto_ex.setupEchange(exchange_name=exchange_id)
                 try:
@@ -617,8 +617,8 @@ class BaseMenu(TableView):
         super().leaveEvent(ev)
     
     def mouseMoveEvent(self,ev:QMouseEvent):
-        pos = ev.pos()
-        index = self.indexAt(pos)
+        pos = ev.position()
+        index = self.indexAt(pos.toPoint())
         self.row_hover = index.row()
         if self.delegate:
             self.delegate.setHoverRow(index.row())

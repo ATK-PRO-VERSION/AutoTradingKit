@@ -22,7 +22,7 @@ class TrendlinesROI(BasePolyLineROI):
         super().__init__(positions, closed, pos)
 
         self.setPen(pen)
-        self.has = {
+        self.has: dict = {
             "x_axis_show":True,
             "name": "rectangle",
             "type": "drawtool",

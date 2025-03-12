@@ -60,6 +60,7 @@ class Chart(ViewPlotWidget):
         self.sources: Dict[str:object] = {}
         
         self.is_load_historic = False
+        self.candle_object = None
         self.time_delay = 0.5
         self.replay_speed = 1
         self.replay_data:list = []
@@ -662,11 +663,8 @@ class Chart(ViewPlotWidget):
             _type = _indicator_type.value
             candle:CandleStick = self.get_candle(_type)
             panel = IndicatorPanel(self.mainwindow,self, candle)
-            # self.container_indicator_wg.sig_add_panel.emit(panel)
             self.container_indicator_wg.add_indicator_panel(panel)
-            #self.sig_add_item.emit(candle)
             self.add_item(candle)
-            # candle.first_setup_candle()
             if isinstance(candle.source,JAPAN_CANDLE): 
                 candle.source.sig_add_candle.emit(candle.source.candles[-2:])
                 ohlcv = candle.source.candles[-1]
@@ -674,7 +672,7 @@ class Chart(ViewPlotWidget):
                 self.sig_show_candle_infor.emit(data)
                 self.auto_xrange()
                 self.sig_show_process.emit(False)
-            if not isinstance(candle.source,JAPAN_CANDLE):
+            if not isinstance(candle.source,JAPAN_CANDLE) and not isinstance(candle.source,HEIKINASHI):
                 self.indicators.append(candle) 
             else:
                 self.candle_object = candle
@@ -695,7 +693,6 @@ class Chart(ViewPlotWidget):
             
             elif _indicator_type==IndicatorType.VWMA:
                 indicator = BASE_VWMA(self)
-                
                 
             #________Custom INDICATORS_________
             elif _indicator_type==IndicatorType.ATKPRO:

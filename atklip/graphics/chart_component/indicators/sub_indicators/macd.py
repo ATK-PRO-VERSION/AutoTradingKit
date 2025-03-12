@@ -41,7 +41,7 @@ class BasicMACD(GraphicsObject):
 
         self._precision = self.chart._precision
         
-        self.has = {
+        self.has: dict = {
             "name": f"MACD 9 12 26",
             "y_axis_show":True,
             "inputs":{
@@ -124,7 +124,7 @@ class BasicMACD(GraphicsObject):
         self.chart_id = _chart_id
         
     @property
-    def model(self) -> dict:
+    def model(self):
         return MACDModel(self.id,"MACD",self.chart.jp_candle.source_name,
                         self.has["inputs"]["type"],
                         self.has["inputs"]["slow_period"],
@@ -173,7 +173,7 @@ class BasicMACD(GraphicsObject):
         xdata,lb,cb,ub= self.INDICATOR.get_data()
         self.reset_histogram((xdata,lb,cb,ub))
         setdata.emit((xdata,lb,cb,ub))
-        self.has["name"] = f"MACD {self.has["inputs"]["mamode"].name} {self.has["inputs"]["fast_period"]} {self.has["inputs"]["slow_period"]} {self.has["inputs"]["signal_period"]} {self.has["inputs"]["type"]}"
+        self.has["name"] = f"""MACD {self.has["inputs"]["mamode"].name} {self.has["inputs"]["fast_period"]} {self.has["inputs"]["slow_period"]} {self.has["inputs"]["signal_period"]} {self.has["inputs"]["type"]}"""
         self.sig_change_indicator_name.emit(self.has["name"])
         
     def replace_source(self):
@@ -230,7 +230,7 @@ class BasicMACD(GraphicsObject):
                 self.has["inputs"][_input] = _source
                 update = True
         if update:
-            self.has["name"] = f"MACD {self.has["inputs"]["mamode"].name} {self.has["inputs"]["fast_period"]} {self.has["inputs"]["slow_period"]} {self.has["inputs"]["signal_period"]} {self.has["inputs"]["type"]}"
+            self.has["name"] = f"""MACD {self.has["inputs"]["mamode"].name} {self.has["inputs"]["fast_period"]} {self.has["inputs"]["slow_period"]} {self.has["inputs"]["signal_period"]} {self.has["inputs"]["type"]}"""
             self.sig_change_indicator_name.emit(self.has["name"])
             self.INDICATOR.change_input(dict_ta_params=self.model.__dict__)
     

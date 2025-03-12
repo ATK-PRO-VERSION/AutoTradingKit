@@ -22,7 +22,78 @@ from atklip.controls.candle import JAPAN_CANDLE
 from atklip.graphics.chart_component.indicators import * 
 from atklip.graphics.chart_component.base_items.candlestick import CandleStick
 
+style_sheet = """QWidget:hover {
+	border: solid;
+    border-width: 0.5px;
+    border-radius: 5px;
+    border-color: #474747;
+}
 
+QWidget:!hover {
+	border: solid;
+    border-width: 0.5px;
+    border-radius: 5px;
+    border-color: transparent;
+}
+
+QPushButton {
+    background-color:transparent;
+	border: solid;
+    border-width: 0px;
+    border-radius: 5px;
+    border-color: transparent;
+
+}
+
+QPushButton:hover {
+    /* "bg_two" */
+   background-color: #444551;
+	border: solid;
+    border-width: 0px;
+    border-radius: 5px;
+    border-color: transparent;
+}
+
+QPushButton:!hover {
+    /* "bg_two" */
+   background-color: transparent;
+	border: solid;
+    border-width: 0px;
+    border-radius: 5px;
+    border-color: transparent;
+}
+
+QPushButton:pressed {
+    background-color : #141622;
+	border: solid;
+    border-width: 0px;
+    border-radius: 5px;
+    border-color: transparent;
+}
+
+QLabel {
+    background-color:transparent;
+    color: #eaeaea;
+    font: 10pt "Segoe UI";
+	border: none;
+}
+
+QLabel:hover{
+    background-color:transparent;
+	color: #eaeaea;
+    font: 12px;
+    font-family: Time Newroman;
+	border: none;
+}
+
+QLabel:!hover{
+    background-color:transparent;
+	color: #eaeaea;
+    font: 12px;
+    font-family: Time Newroman;
+	border: none;
+}
+""".encode("utf-8").decode("utf-8")
 class IndicatorPanel(QWidget):
     def __init__(self, parent:QWidget=None, chart=None, indicator:Any=None):
         super().__init__(parent)
@@ -39,6 +110,9 @@ class IndicatorPanel(QWidget):
 
         self.indicator_panel = indicator_panel()
         self.indicator_panel.setupUi(self)
+        self.setStyleSheet(style_sheet)
+
+
         self.lb_indicator_name = self.indicator_panel.name
         self.btn_setting = self.indicator_panel.btn_indicator_setting
         self.btn_show_hide = self.indicator_panel.showhide

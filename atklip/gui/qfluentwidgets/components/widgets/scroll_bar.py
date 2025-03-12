@@ -309,21 +309,21 @@ class ScrollBar(QWidget):
     def mousePressEvent(self, e: QMouseEvent):
         super().mousePressEvent(e)
         self._isPressed = True
-        self._pressedPos = e.pos()
+        self._pressedPos = e.position()
 
-        if self.childAt(e.pos()) is self.handle or not self._isSlideResion(e.pos()):
+        if self.childAt(e.position()) is self.handle or not self._isSlideResion(e.position()):
             return
 
         if self.orientation() == Qt.Vertical:
-            if e.pos().y() > self.handle.geometry().bottom():
-                value = e.pos().y() - self.handle.height() - self._padding
+            if e.position().y() > self.handle.geometry().bottom():
+                value = e.position().y() - self.handle.height() - self._padding
             else:
-                value = e.pos().y() - self._padding
+                value = e.position().y() - self._padding
         else:
-            if e.pos().x() > self.handle.geometry().right():
-                value = e.pos().x() - self.handle.width() - self._padding
+            if e.position().x() > self.handle.geometry().right():
+                value = e.position().x() - self.handle.width() - self._padding
             else:
-                value = e.pos().x() - self._padding
+                value = e.position().x() - self._padding
 
         self.setValue(int(value / max(self._slideLength(), 1) * self.maximum()))
         self.sliderPressed.emit()
@@ -335,15 +335,15 @@ class ScrollBar(QWidget):
 
     def mouseMoveEvent(self, e: QMouseEvent):
         if self.orientation() == Qt.Vertical:
-            dv = e.pos().y() - self._pressedPos.y()
+            dv = e.position().y() - self._pressedPos.y()
         else:
-            dv = e.pos().x() - self._pressedPos.x()
+            dv = e.position().x() - self._pressedPos.x()
 
         # don't use `self.setValue()`, because it could be reimplemented
         dv = int(dv / max(self._slideLength(), 1) * (self.maximum() - self.minimum()))
         ScrollBar.setValue(self, self.value() + dv)
 
-        self._pressedPos = e.pos()
+        self._pressedPos = e.position()
         self.sliderMoved.emit()
 
     def _adjustPos(self, size):

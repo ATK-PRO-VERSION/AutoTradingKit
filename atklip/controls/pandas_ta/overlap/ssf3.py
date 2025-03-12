@@ -1,32 +1,8 @@
 # -*- coding: utf-8 -*-
-from numpy import copy, cos, exp, zeros_like
-from numba import njit
 from pandas import Series
-from atklip.controls.pandas_ta._typing import Array, DictLike, Int, IntFloat
+from atklip.controls.pandas_ta._typing import DictLike, Int, IntFloat
 from atklip.controls.pandas_ta.utils import v_offset, v_pos_default, v_series
-
-
-
-# John F. Ehler's Super Smoother Filter by Everget (3 poles), Tradingview
-# https://www.tradingview.com/script/VdJy0yBJ-Ehlers-Super-Smoother-Filter/
-@njit(cache=True)
-def nb_ssf3(x, n, pi, sqrt3):
-    m, result = x.size, copy(x)
-    a = exp(-pi / n)
-    b = 2 * a * cos(-pi * sqrt3 / n)
-    c = a * a
-
-    d4 = c * c
-    d3 = -c * (1 + b)
-    d2 = b + c
-    d1 = 1 - d2 - d3 - d4
-
-    # result[:3] = x[:3]
-    for i in range(3, m):
-        result[i] = d1 * x[i] + d2 * result[i - 1] \
-            + d3 * result[i - 2] + d4 * result[i - 3]
-
-    return result
+from atklip.controls.pandas_ta.utils._numba import nb_ssf3
 
 
 def ssf3(

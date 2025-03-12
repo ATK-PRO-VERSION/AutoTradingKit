@@ -5,12 +5,9 @@ from operator import mul
 from sys import float_info as sflt
 
 from numpy import (
-    all, append, array, corrcoef, dot, exp, fabs, float64,
-    log, nan, ndarray, ones, seterr, sign, sqrt, sum, triu,
-    zeros
+    all, array, corrcoef, dot, exp, fabs, log, nan, ndarray, ones, seterr, sign, sqrt, sum, triu
 )
 from pandas import DataFrame, Series
-from numba import njit
 from atklip.controls.pandas_ta._typing import (
     Array,
     DictLike,
@@ -23,21 +20,23 @@ from atklip.controls.pandas_ta._typing import (
 from atklip.controls.pandas_ta.maps import Imports
 from atklip.controls.pandas_ta.utils._validate import v_series
 
-__all__ = [
-    "combination",
-    "df_error_analysis",
-    "erf",
-    "fibonacci",
-    "geometric_mean",
-    "hpoly",
-    "linear_regression",
-    "log_geometric_mean",
-    "pascals_triangle",
-    "strided_window",
-    "symmetric_triangle",
-    "weights",
-    "zero",
-]
+from atklip.controls.pandas_ta.utils._numba import fibonacci
+
+# __all__ = [
+#     "combination",
+#     "df_error_analysis",
+#     "erf",
+#     "fibonacci",
+#     "geometric_mean",
+#     "hpoly",
+#     "linear_regression",
+#     "log_geometric_mean",
+#     "pascals_triangle",
+#     "strided_window",
+#     "symmetric_triangle",
+#     "weights",
+#     "zero",
+# ]
 
 
 
@@ -82,20 +81,6 @@ def erf(x: IntFloat) -> Float:
                * t + a1) * t * exp(-x * x)
     return x_sign * y  # erf(-x) = -erf(x)
 
-
-@njit(cache=True)
-def fibonacci(n, weighted):
-    n = n if n > 1 else 2
-    sqrt5 = sqrt(5.0)
-    phi, psi = 0.5 * (1.0 + sqrt5), 0.5 * (1.0 - sqrt5)
-
-    result = zeros(n)
-    for i in range(0, n):
-        result[i] = float(phi ** (i + 1) - psi ** (i + 1)) / sqrt5
-
-    if weighted:
-        return result / result.sum()
-    return result
 
 
 def geometric_mean(series: Series) -> Float:

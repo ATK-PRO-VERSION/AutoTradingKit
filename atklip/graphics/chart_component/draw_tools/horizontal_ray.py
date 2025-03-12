@@ -331,7 +331,7 @@ class Horizontal_ray(CustomLineSegmentROI):
         self.price_axis = self.chart.getAxis('right')
         self.bottom_axis = self.chart.getAxis('bottom')
         self.isSelected = False
-        self.has = {
+        self.has: dict = {
             "y_axis_show":True,
             "name": "rectangle",
             "type": "drawtool",

@@ -32,10 +32,8 @@ class MovingParentWG(PushButton):
         self.sig_mouse_move.connect(self.move_parent,Qt.ConnectionType.AutoConnection)
 
     def mousePressEvent(self, event):
-        try:
-            ev_pos = event.position()
-        except:
-            ev_pos = event.pos()
+        ev_pos = event.position()
+
  
         self.startPos = ev_pos
         self.setCursor(Qt.CursorShape.ClosedHandCursor)
@@ -46,10 +44,8 @@ class MovingParentWG(PushButton):
         self.flyout.move(updated_cursor_x, updated_cursor_y)
     
     def mouseMoveEvent(self, event):
-        try:
-            ev_pos = event.position()
-        except:
-            ev_pos = event.pos()
+        ev_pos = event.position()
+
             
         if self.startPos == None:
             return

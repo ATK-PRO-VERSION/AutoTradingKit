@@ -39,7 +39,7 @@ class Arrow(QGraphicsObject):
         self.source, mamode, period, n = self.get_source(self._type)
         
         if mamode != None:
-            self.has = {
+            self.has: dict = {
             "is_candle": True,
             "name": f"{self.source.source_name} {mamode.name} {period} {n}",
             "y_axis_show":True,
@@ -59,7 +59,7 @@ class Arrow(QGraphicsObject):
                     }
                 }
         else:
-            self.has = {
+            self.has: dict = {
             "name": f"{self.source.source_name}",
             "y_axis_show":True,
             "inputs":{
@@ -110,11 +110,11 @@ class Arrow(QGraphicsObject):
         self.chart.remove_source(self.source)
         source_name = self.has["name"].split(" ")[0]
         if isinstance(self.source,N_SMOOTH_CANDLE):
-            self.has["name"] = f"{source_name} {self.has["inputs"]["mamode"].name} {self.has["inputs"]["ma_period"]} {self.has["inputs"]["n_smooth_period"]}"
+            self.has["name"] = f"""{source_name} {self.has["inputs"]["mamode"].name} {self.has["inputs"]["ma_period"]} {self.has["inputs"]["n_smooth_period"]}"""
         if isinstance(self.source,SMOOTH_CANDLE):
-            self.has["name"] = f"{source_name} {self.has["inputs"]["mamode"].name} {self.has["inputs"]["ma_period"]}"
+            self.has["name"] = f"""{source_name} {self.has["inputs"]["mamode"].name} {self.has["inputs"]["ma_period"]}"""
         else:
-            self.has["name"] = f"{source_name} {self.chart.symbol} {self.chart.interval}"
+            self.has["name"] = f"""{source_name} {self.chart.symbol} {self.chart.interval}"""
         
         self.source.source_name = self.has["name"]
         
@@ -150,9 +150,9 @@ class Arrow(QGraphicsObject):
             
             if mamode != None:
                 if isinstance(self.source,N_SMOOTH_CANDLE):
-                    self.has["name"] = f"{self.source.source_name} {self.has["inputs"]["mamode"].name} {self.has["inputs"]["ma_period"]} {self.has["inputs"]["n_smooth_period"]}"
+                    self.has["name"] = f"""{self.source.source_name} {self.has["inputs"]["mamode"].name} {self.has["inputs"]["ma_period"]} {self.has["inputs"]["n_smooth_period"]}"""
                 else:
-                    self.has["name"] = f"{self.source.source_name} {self.has["inputs"]["mamode"].name} {self.has["inputs"]["ma_period"]}"
+                    self.has["name"] = f"""{self.source.source_name} {self.has["inputs"]["mamode"].name} {self.has["inputs"]["ma_period"]}"""
             else:
                 self.has.update({"inputs":{
                         "source":self.source,
@@ -172,7 +172,7 @@ class Arrow(QGraphicsObject):
         mamode = self.has["inputs"].get("mamode")
 
         if mamode != None:
-            self.has["name"] = f"{self.source.source_name} {self.has["inputs"]["mamode"].name} {self.has["inputs"]["ma_period"]} {self.has["inputs"]["n_smooth_period"]}"
+            self.has["name"] = f"""{self.source.source_name} {self.has["inputs"]["mamode"].name} {self.has["inputs"]["ma_period"]} {self.has["inputs"]["n_smooth_period"]}"""
         else:
             self.has["name"] = f"{self.source.source_name}"
             

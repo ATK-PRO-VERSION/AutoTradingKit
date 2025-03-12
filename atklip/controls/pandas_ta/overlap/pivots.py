@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
-from numpy import greater, nan, zeros_like
-from numba import njit
+from numpy import nan, zeros_like
 from pandas import DataFrame, DateOffset, Series, infer_freq
 from atklip.controls.pandas_ta._typing import DictLike
 from atklip.controls.pandas_ta.utils import (
-    nb_non_zero_range,
     v_datetime_ordered,
     v_series,
     v_str
 )
+from atklip.controls.pandas_ta.utils._numba import pivot_camarilla, pivot_classic, pivot_demark, pivot_fibonacci, pivot_traditional, pivot_woodie
 
 # Support for Pandas v1.4.x and v2.2.x
 td_mapping = {
@@ -19,109 +18,6 @@ td_mapping = {
     'D': 'days',
 }
 
-
-
-@njit(cache=True)
-def pivot_camarilla(high, low, close):
-    tp = (high + low + close) / 3
-    hl_range = nb_non_zero_range(high, low)
-
-    s1 = close - 11 / 120 * hl_range
-    s2 = close - 11 / 60 * hl_range
-    s3 = close - 0.275 * hl_range
-    s4 = close - 0.55 * hl_range
-
-    r1 = close + 11 / 120 * hl_range
-    r2 = close + 11 / 60 * hl_range
-    r3 = close + 0.275 * hl_range
-    r4 = close + 0.55 * hl_range
-
-    return tp, s1, s2, s3, s4, r1, r2, r3, r4
-
-
-@njit(cache=True)
-def pivot_classic(high, low, close):
-    tp = (high + low + close) / 3
-    hl_range = nb_non_zero_range(high, low)
-
-    s1 = 2 * tp - high
-    s2 = tp - hl_range
-    s3 = tp - 2 * hl_range
-    s4 = tp - 3 * hl_range
-
-    r1 = 2 * tp - low
-    r2 = tp + hl_range
-    r3 = tp + 2 * hl_range
-    r4 = tp + 3 * hl_range
-
-    return tp, s1, s2, s3, s4, r1, r2, r3, r4
-
-
-@njit(cache=True)
-def pivot_demark(open_, high, low, close):
-    if (open_ == close).all():
-        tp = 0.25 * (high + low + 2 * close)
-    elif greater(close, open_).all():
-        tp = 0.25 * (2 * high + low + close)
-    else:
-        tp = 0.25 * (high + 2 * low + close)
-
-    s1 = 2 * tp - high
-    r1 = 2 * tp - low
-
-    return tp, s1, r1
-
-
-@njit(cache=True)
-def pivot_fibonacci(high, low, close):
-    tp = (high + low + close) / 3
-    hl_range = nb_non_zero_range(high, low)
-
-    s1 = tp - 0.382 * hl_range
-    s2 = tp - 0.618 * hl_range
-    s3 = tp - hl_range
-
-    r1 = tp + 0.382 * hl_range
-    r2 = tp + 0.618 * hl_range
-    r3 = tp + hl_range
-
-    return tp, s1, s2, s3, r1, r2, r3
-
-
-@njit(cache=True)
-def pivot_traditional(high, low, close):
-    tp = (high + low + close) / 3
-    hl_range = nb_non_zero_range(high, low)
-
-    s1 = 2 * tp - high
-    s2 = tp - hl_range
-    s3 = tp - 2 * hl_range
-    s4 = tp - 2 * hl_range
-
-    r1 = 2 * tp - low
-    r2 = tp +  hl_range
-    r3 = tp + 2 * hl_range
-    r4 = tp + 2 * hl_range
-
-    return tp, s1, s2, s3, s4, r1, r2, r3, r4
-
-
-@njit(cache=True)
-def pivot_woodie(open_, high, low):
-    tp = (2 * open_ + high + low) / 4
-    hl_range = nb_non_zero_range(high, low)
-
-    s1 = 2 * tp - high
-    s2 = tp - hl_range
-    s3 = low - 2 * (high - tp)
-    s4 = s3 - hl_range
-
-    r1 = 2 * tp - low
-    r2 = tp + hl_range
-    r3 = high + 2 * (tp - low)
-    r4 = r3 + hl_range
-
-    return tp, s1, s2, s3, s4, r1, r2, r3, r4
 
 
 def pivots(

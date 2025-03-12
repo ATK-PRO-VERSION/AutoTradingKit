@@ -39,7 +39,7 @@ class BasicSTC(PlotDataItem):
 
         self._precision = self.chart._precision
         
-        self.has = {
+        self.has: dict = {
             "name": f"STC 9 12 26",
             "y_axis_show":True,
             "inputs":{
@@ -111,7 +111,7 @@ class BasicSTC(PlotDataItem):
         self.chart_id = _chart_id
         
     @property
-    def model(self) -> dict:
+    def model(self):
         return STCModel(self.id,"STC",self.chart.jp_candle.source_name,
                         self.has["inputs"]["type"],
                         self.has["inputs"]["length_period"],
@@ -153,7 +153,7 @@ class BasicSTC(PlotDataItem):
 
     def regen_indicator(self,setdata):
         xdata,stc,macd,stoch= self.INDICATOR.get_data()        
-        self.has["name"] = f"STC {self.has["inputs"]["mamode"].name} {self.has["inputs"]["length_period"]} {self.has["inputs"]["fast_period"]} {self.has["inputs"]["slow_period"]} {self.has["inputs"]["type"]}"
+        self.has["name"] = f"""STC {self.has["inputs"]["mamode"].name} {self.has["inputs"]["length_period"]} {self.has["inputs"]["fast_period"]} {self.has["inputs"]["slow_period"]} {self.has["inputs"]["type"]}"""
         self.sig_change_indicator_name.emit(self.has["name"])
         setdata.emit((xdata,stc,macd,stoch))
         self.sig_change_yaxis_range.emit()
@@ -207,7 +207,7 @@ class BasicSTC(PlotDataItem):
                 self.has["inputs"][_input] = _source
                 update = True
         if update:
-            self.has["name"] = f"STC {self.has["inputs"]["mamode"].name} {self.has["inputs"]["length_period"]} {self.has["inputs"]["fast_period"]} {self.has["inputs"]["slow_period"]} {self.has["inputs"]["type"]}"
+            self.has["name"] = f"""STC {self.has["inputs"]["mamode"].name} {self.has["inputs"]["length_period"]} {self.has["inputs"]["fast_period"]} {self.has["inputs"]["slow_period"]} {self.has["inputs"]["type"]}"""
             self.sig_change_indicator_name.emit(self.has["name"])
             self.INDICATOR.change_input(dict_ta_params=self.model.__dict__)
     

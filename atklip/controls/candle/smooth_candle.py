@@ -35,7 +35,7 @@ class SMOOTH_CANDLE(QObject):
             self.id_exchange:str = dict_candle_params["id_exchange"]
             self.symbol:str = dict_candle_params["symbol"]
             self.interval:str = dict_candle_params["interval"]
-            self.mamode:str = dict_candle_params["mamode"]
+            self.mamode:PD_MAType = dict_candle_params["mamode"]
             self.ma_leng:int= dict_candle_params["ma_leng"]
             self.source:str = dict_candle_params["source"]
             self.precision = dict_candle_params["precision"]
@@ -83,14 +83,14 @@ class SMOOTH_CANDLE(QObject):
             self.id_exchange:str = dict_candle_params["id_exchange"]
             self.symbol:str = dict_candle_params["symbol"]
             self.interval:str = dict_candle_params["interval"]
-            self.mamode:str = dict_candle_params["mamode"]
+            self.mamode:PD_MAType = dict_candle_params["mamode"]
             self.ma_leng:int= dict_candle_params["ma_leng"]
             self.source:str = dict_candle_params["source"]
             self.precision = dict_candle_params["precision"]
             self.canlde_id = dict_candle_params["canlde_id"]
             self.chart_id = dict_candle_params["chart_id"]
             self.name:str=dict_candle_params.get("name")
-            source_name = f"{self.chart_id}-{self.canlde_id}-{self.id_exchange}-{self.source}-{self.name}-{self.symbol}-{self.interval}-{self.mamode}-{self.ma_leng}"
+            source_name = f"{self.chart_id}-{self.canlde_id}-{self.id_exchange}-{self.source}-{self.name}-{self.symbol}-{self.interval}-{self.mamode.name}-{self.ma_leng}".encode("utf-8").decode("utf-8")
             self.source_name = source_name
         
         self.first_gen = False
@@ -417,7 +417,7 @@ class SMOOTH_CANDLE(QObject):
         self.is_histocric_load = False
         _pre_len = len(self.df)
         df:pd.DataFrame = self._candles.get_df().iloc[:-1*_pre_len]
-        process = HeavyProcess(self.pro_gen_data,self.callback_gen_historic_data,df,self.mamode,self.ma_leng,self.precision)
+        process = HeavyProcess(self.pro_gen_data,self.callback_gen_historic_data,df,self.mamode.name,self.ma_leng,self.precision)
         process.start()
     
     @staticmethod
@@ -462,7 +462,7 @@ class SMOOTH_CANDLE(QObject):
         self.map_index_ohlcv: Dict[int, OHLCV] = {}
         self.map_time_ohlcv: Dict[int, OHLCV] = {}
         df:pd.DataFrame = self._candles.get_df()
-        process = HeavyProcess(self.pro_gen_data,self.callback_first_gen,df,self.mamode,self.ma_leng,self.precision)
+        process = HeavyProcess(self.pro_gen_data,self.callback_first_gen,df,self.mamode.name,self.ma_leng,self.precision)
         process.start()
 
     
@@ -503,7 +503,7 @@ class SMOOTH_CANDLE(QObject):
                 
             df:pd.DataFrame = self._candles.get_df(self.ma_leng*5)
             
-            process = HeavyProcess(self.pro_gen_data,self.callback_update_ma_ohlc,df,self.mamode,self.ma_leng,self.precision)
+            process = HeavyProcess(self.pro_gen_data,self.callback_update_ma_ohlc,df,self.mamode.name,self.ma_leng,self.precision)
             process.start()
         else:
             pass

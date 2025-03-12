@@ -4,7 +4,7 @@ import pandas as pd
 from atklip.app_utils.helpers import crossover
 from atklip.appmanager.worker.return_worker import HeavyProcess
 
-from atklip.controls import atr
+from atklip.controls.pandas_ta import atr
 from atklip.controls.ma_overload import ema, ma
 
 import numpy as np

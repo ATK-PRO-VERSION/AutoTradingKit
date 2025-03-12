@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import atklip.controls as ta
+import atklip.controls.pandas_ta as ta
 
 def ma_function(source, length, smoothing):
     if smoothing == "RMA":

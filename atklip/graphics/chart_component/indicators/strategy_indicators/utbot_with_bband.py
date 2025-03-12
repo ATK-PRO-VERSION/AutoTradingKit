@@ -44,7 +44,7 @@ class UTBOT_WITH_BBAND(GraphicsObject):
         self.setFlag(self.GraphicsItemFlag.ItemUsesExtendedStyleOption,True)
         
         self.chart:Chart = chart
-        self.has = {
+        self.has: dict = {
             "name": f"UTBOT Alert",
             "y_axis_show":False,
             
@@ -130,7 +130,7 @@ class UTBOT_WITH_BBAND(GraphicsObject):
                     )
     
     @property
-    def model(self) -> dict:
+    def model(self):
         return UTBOTWITHBBModel(self.id,"UTBOT_WITH_BB",self.has["inputs"]["source"].source_name,
                                 self.has["inputs"]["atr_length"],
                                 self.has["inputs"]["channel_length"],

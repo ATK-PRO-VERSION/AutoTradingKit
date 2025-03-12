@@ -46,7 +46,7 @@ class CandleStick(GraphicsObject):
             else:
                 name = f"{self.source.source_name} {mamode.name} {period} {n}"
             
-            self.has = {
+            self.has: dict = {
             "is_candle": True,
             "name": name,
             "y_axis_show":True,
@@ -66,7 +66,7 @@ class CandleStick(GraphicsObject):
                     }
                 }
         else:
-            self.has = {
+            self.has: dict = {
             "name": f"{self.source.source_name}",
             "y_axis_show":True,
             "inputs":{
@@ -129,9 +129,9 @@ class CandleStick(GraphicsObject):
         self.chart.remove_source(self.source)
         source_name = self.has["name"].split(" ")[0]
         if isinstance(self.source,N_SMOOTH_CANDLE):
-            self.has["name"] = f"{source_name} {self.has["inputs"]["mamode"].name} {self.has["inputs"]["ma_period"]} {self.has["inputs"]["n_smooth_period"]}"
+            self.has["name"] = f"""{source_name} {self.has["inputs"]["mamode"].name} {self.has["inputs"]["ma_period"]} {self.has["inputs"]["n_smooth_period"]}"""
         if isinstance(self.source,SMOOTH_CANDLE):
-            self.has["name"] = f"{source_name} {self.has["inputs"]["mamode"].name} {self.has["inputs"]["ma_period"]}"
+            self.has["name"] = f"""{source_name} {self.has["inputs"]["mamode"].name} {self.has["inputs"]["ma_period"]}"""
         else:
             self.has["name"] = f"{source_name} {self.chart.symbol} {self.chart.interval}"
         
@@ -169,9 +169,9 @@ class CandleStick(GraphicsObject):
             
             if mamode != None:
                 if isinstance(self.source,N_SMOOTH_CANDLE):
-                    self.has["name"] = f"{self.source.source_name} {self.has["inputs"]["mamode"].name} {self.has["inputs"]["ma_period"]} {self.has["inputs"]["n_smooth_period"]}"
+                    self.has["name"] = f"""{self.source.source_name} {self.has["inputs"]["mamode"].name} {self.has["inputs"]["ma_period"]} {self.has["inputs"]["n_smooth_period"]}"""
                 else:
-                    self.has["name"] = f"{self.source.source_name} {self.has["inputs"]["mamode"].name} {self.has["inputs"]["ma_period"]}"
+                    self.has["name"] = f"""{self.source.source_name} {self.has["inputs"]["mamode"].name} {self.has["inputs"]["ma_period"]}"""
             else:
                 self.has.update({"inputs":{
                         "source":self.source,
@@ -191,7 +191,7 @@ class CandleStick(GraphicsObject):
         mamode = self.has["inputs"].get("mamode")
 
         if mamode != None:
-            self.has["name"] = f"{self.source.source_name} {self.has["inputs"]["mamode"].name} {self.has["inputs"]["ma_period"]} {self.has["inputs"]["n_smooth_period"]}"
+            self.has["name"] = f"""{self.source.source_name} {self.has["inputs"]["mamode"].name} {self.has["inputs"]["ma_period"]} {self.has["inputs"]["n_smooth_period"]}"""
         else:
             self.has["name"] = f"{self.source.source_name}"
             

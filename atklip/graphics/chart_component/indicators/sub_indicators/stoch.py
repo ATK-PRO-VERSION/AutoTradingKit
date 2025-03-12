@@ -40,7 +40,7 @@ class BasicSTOCH(GraphicsObject):
 
         self._precision = self.chart._precision
         
-        self.has = {
+        self.has: dict = {
             "name": f"STOCH 9 12 26",
             "y_axis_show":True,
             "inputs":{
@@ -114,7 +114,7 @@ class BasicSTOCH(GraphicsObject):
         self.chart_id = _chart_id
         
     @property
-    def model(self) -> dict:
+    def model(self):
         return STOCHModel(self.id,"STOCH",self.chart.jp_candle.source_name,
                         self.has["inputs"]["smooth_k_period"],
                         self.has["inputs"]["k_period"],
@@ -155,7 +155,7 @@ class BasicSTOCH(GraphicsObject):
 
     def regen_indicator(self,setdata):
         xdata,stoch,signalma= self.INDICATOR.get_data()  
-        self.has["name"] = f"STOCH {self.has["inputs"]["mamode"].name} {self.has["inputs"]["smooth_k_period"]} {self.has["inputs"]["k_period"]} {self.has["inputs"]["d_period"]}"
+        self.has["name"] = f"""STOCH {self.has["inputs"]["mamode"].name} {self.has["inputs"]["smooth_k_period"]} {self.has["inputs"]["k_period"]} {self.has["inputs"]["d_period"]}"""
         self.sig_change_indicator_name.emit(self.has["name"])
         setdata.emit((xdata,stoch,signalma))
         self.sig_change_yaxis_range.emit()
@@ -202,7 +202,7 @@ class BasicSTOCH(GraphicsObject):
                 self.has["inputs"][_input] = _source
                 update = True
         if update:
-            self.has["name"] = f"STOCH {self.has["inputs"]["mamode"].name} {self.has["inputs"]["smooth_k_period"]} {self.has["inputs"]["k_period"]} {self.has["inputs"]["d_period"]}"
+            self.has["name"] = f"""STOCH {self.has["inputs"]["mamode"].name} {self.has["inputs"]["smooth_k_period"]} {self.has["inputs"]["k_period"]} {self.has["inputs"]["d_period"]}"""
             self.sig_change_indicator_name.emit(self.has["name"])
             self.INDICATOR.change_input(dict_ta_params=self.model.__dict__)
     

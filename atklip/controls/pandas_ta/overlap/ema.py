@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from numpy import nan
-from numba import njit
 from pandas import Series
 from atklip.controls.pandas_ta._typing import DictLike, Int
 from atklip.controls.pandas_ta.maps import Imports

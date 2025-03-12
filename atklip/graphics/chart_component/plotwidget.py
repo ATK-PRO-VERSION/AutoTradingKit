@@ -4,8 +4,8 @@ from .plotitem import ViewPlotItem
 from atklip.controls import *
 
 from PySide6 import QtGui
-from PySide6.QtCore import Signal,Qt,QSize,QEvent,QTime
-from PySide6.QtGui import QPainter
+from PySide6.QtCore import Signal,Qt,QSize,QTime,QEvent
+from PySide6.QtGui import QPainter,QMouseEvent
 from PySide6.QtWidgets import QGraphicsView,QWidget
 from atklip.graphics.pyqtgraph import mkPen, PlotWidget,setConfigOption
 
@@ -294,7 +294,7 @@ class ViewPlotWidget(PlotWidget):
         except Exception:
             return str(round(value, 4))
 
-    def leaveEvent(self, ev: QEvent) -> None:
+    def leaveEvent(self, ev: QMouseEvent) -> None:
         """Mouse left PlotWidget"""
         global_signal.sig_show_hide_cross.emit((False,self.nearest_value))
         self.crosshair_x_value_change.emit(("#363a45",None))
@@ -305,7 +305,7 @@ class ViewPlotWidget(PlotWidget):
             self.replay_obj.hide()
         super().leaveEvent(ev)
 
-    def enterEvent(self, ev: QEvent) -> None:
+    def enterEvent(self, ev: QMouseEvent) -> None:
         """Mouse enter PlotWidget"""
         if self.replay_obj:
             self.replay_obj.show()
@@ -336,12 +336,10 @@ class ViewPlotWidget(PlotWidget):
                 self.mouse_clicked_on_chart.emit(ev)
         super().mouseReleaseEvent(ev)
         
-    def mouseMoveEvent(self, ev: QEvent) -> None:
+    def mouseMoveEvent(self, ev: QMouseEvent) -> None:
         """Mouse moved in PlotWidget"""
-        try:
-            self.ev_pos = ev.position()
-        except:
-            self.ev_pos = ev.pos()
+        self.ev_pos = ev.position()
+
         self.lastMousePositon = self.PlotItem.vb.mapSceneToView(self.ev_pos)
         
         if self.drawtool.drawing_object:

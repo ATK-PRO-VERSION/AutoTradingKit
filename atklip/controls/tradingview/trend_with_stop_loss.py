@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 from atklip.appmanager.worker.return_worker import HeavyProcess
-from atklip.controls.momentum import macd
+from atklip.controls.pandas_ta.momentum import macd
 from atklip.controls.tradingview.atr_stoploss import atr_stoploss
 
 """_summary_

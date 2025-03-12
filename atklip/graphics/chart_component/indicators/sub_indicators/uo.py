@@ -38,7 +38,7 @@ class BasicUO(PlotDataItem):
 
         self._precision = self.chart._precision
         
-        self.has = {
+        self.has: dict = {
             "name" :f"UO 3",
             "y_axis_show":True,
             "inputs":{
@@ -104,7 +104,7 @@ class BasicUO(PlotDataItem):
         self.chart_id = _chart_id
         
     @property
-    def model(self) -> dict:
+    def model(self):
         return UOModel(self.id,"STOCHRSI",self.chart.jp_candle.source_name,
                         self.has["inputs"]["fast_period"],
                         self.has["inputs"]["medium_period"],
@@ -152,7 +152,7 @@ class BasicUO(PlotDataItem):
     def regen_indicator(self,setdata):
         xdata,y_data= self.INDICATOR.get_data()
         setdata.emit((xdata,y_data))
-        self.has["name"] = f"UO {self.has["inputs"]["slow_period"]} {self.has["inputs"]["medium_period"]} {self.has["inputs"]["fast_period"]}"
+        self.has["name"] = f"""UO {self.has["inputs"]["slow_period"]} {self.has["inputs"]["medium_period"]} {self.has["inputs"]["fast_period"]}"""
         self.sig_change_indicator_name.emit(self.has["name"])
         self.sig_change_yaxis_range.emit()
 
@@ -232,7 +232,7 @@ class BasicUO(PlotDataItem):
                 update = True
                 
         if update:
-            self.has["name"] = f"UO {self.has["inputs"]["slow_period"]} {self.has["inputs"]["medium_period"]} {self.has["inputs"]["fast_period"]}"
+            self.has["name"] = f"""UO {self.has["inputs"]["slow_period"]} {self.has["inputs"]["medium_period"]} {self.has["inputs"]["fast_period"]}"""
             self.sig_change_indicator_name.emit(self.has["name"])
             self.INDICATOR.change_input(dict_ta_params=self.model.__dict__)
     def get_inputs(self):

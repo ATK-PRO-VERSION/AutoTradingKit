@@ -2,8 +2,8 @@ from functools import lru_cache
 from typing import Union, Optional, Any, List, TYPE_CHECKING
 import time
 from PySide6 import QtGui
-from PySide6.QtGui import QPainter
-from PySide6.QtCore import Signal,QPointF,Qt,QEvent,QThreadPool,QCoreApplication
+from PySide6.QtGui import QPainter,QMouseEvent
+from PySide6.QtCore import Signal,QPointF,Qt,QThreadPool,QEvent
 from PySide6.QtWidgets import QGraphicsView
 import numpy as np
 from atklip.app_utils.calculate import round_
@@ -319,7 +319,7 @@ class ViewSubPanel(PlotWidget):
         except Exception:
             return str(round(value, 4))
 
-    def leaveEvent(self, ev: QEvent) -> None:
+    def leaveEvent(self, ev: QMouseEvent) -> None:
         """Mouse left PlotWidget"""
         global_signal.sig_show_hide_cross.emit((False,self.nearest_value))
         self.crosshair_x_value_change.emit(("#363a45",None))
@@ -329,7 +329,7 @@ class ViewSubPanel(PlotWidget):
             self.hide_crosshair()
         super().leaveEvent(ev)
 
-    def enterEvent(self, ev: QEvent) -> None:
+    def enterEvent(self, ev: QMouseEvent) -> None:
         """Mouse enter PlotWidget"""
         self._parent.sig_show_hide_cross.emit((True,self.nearest_value))
         if self.crosshair_enabled:
@@ -358,14 +358,12 @@ class ViewSubPanel(PlotWidget):
     def mouseReleaseEvent(self, ev):
         super().mouseReleaseEvent(ev)
         self.is_mouse_pressed = False
-    def mouseMoveEvent(self, ev: QEvent) -> None:
+    def mouseMoveEvent(self, ev: QMouseEvent) -> None:
         if not self.is_mouse_pressed:
             self._precision = self.Chart.get_precision()
             """Mouse moved in PlotWidget"""
-            try:
-                self.ev_pos = ev.position()
-            except:
-                self.ev_pos = ev.pos()
+            self.ev_pos = ev.position()
+
             self.lastMousePositon = self.PlotItem.vb.mapSceneToView(self.ev_pos)
             if self.crosshair_enabled and self.sceneBoundingRect().contains(self.ev_pos):
                 self.mouse_on_vb = True

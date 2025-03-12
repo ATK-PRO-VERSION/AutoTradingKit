@@ -35,8 +35,8 @@ class KeltnerChannels(GraphicsObject):
         self.setFlag(self.GraphicsItemFlag.ItemUsesExtendedStyleOption,True)
         
         self.chart:Chart = chart
-        self.has = {
-            "name": f"KC 20",
+        self.has: dict = {
+            "name": "KC 20",
             "y_axis_show":False,
             
             "inputs":{
@@ -96,7 +96,7 @@ class KeltnerChannels(GraphicsObject):
         self.chart_id = _chart_id
         
     @property
-    def model(self) -> dict:
+    def model(self):
         return KeltnerChannelsModel(self.id,"KeltnerChannels",self.chart.jp_candle.source_name,
                               self.has["inputs"]["length"])
     
@@ -137,7 +137,7 @@ class KeltnerChannels(GraphicsObject):
         xdata,lb,cb,ub= self.INDICATOR.get_data()
         setdata.emit((xdata,lb,cb,ub))
         self.sig_change_yaxis_range.emit()
-        self.has["name"] = f"KC {self.has["inputs"]["length"]}"
+        self.has["name"] = f"""KC {self.has["inputs"]["length"]}"""
         self.sig_change_indicator_name.emit(self.has["name"])
         
     def replace_source(self):
@@ -185,7 +185,7 @@ class KeltnerChannels(GraphicsObject):
                 is_update = True
         
         if is_update:
-            self.has["name"] = f"KC {self.has["inputs"]["length"]}"
+            self.has["name"] = f"""KC {self.has["inputs"]["length"]}"""
             self.sig_change_indicator_name.emit(self.has["name"])
             self.INDICATOR.change_input(dict_ta_params=self.model.__dict__)
     

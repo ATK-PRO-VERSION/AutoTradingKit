@@ -21,7 +21,7 @@ class Longposition(BaseRect):
 
         self.drawtool:DrawTool = drawtool
         self.chart:Chart = self.drawtool.chart
-        self.has = {
+        self.has: dict = {
             "y_axis_show":False,
             "name": "Long Position",
             "type": "longposition",

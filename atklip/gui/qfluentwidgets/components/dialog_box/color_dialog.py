@@ -22,10 +22,10 @@ class HuePanel(QWidget):
         self.setColor(color)
 
     def mousePressEvent(self, e):
-        self.setPickerPosition(e.pos())
+        self.setPickerPosition(e.position())
 
     def mouseMoveEvent(self, e):
-        self.setPickerPosition(e.pos())
+        self.setPickerPosition(e.position())
 
     def setPickerPosition(self, pos):
         """ set the position of  """

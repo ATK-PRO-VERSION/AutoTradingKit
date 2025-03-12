@@ -4,7 +4,7 @@ from pandas import DataFrame, Series
 from atklip.controls.pandas_ta._typing import DictLike, Int, IntFloat
 from atklip.controls.pandas_ta.overlap import hl2
 from atklip.controls.pandas_ta.utils import v_mamode, v_offset, v_pos_default, v_series
-from atklip.controls.volatility import atr
+from atklip.controls.pandas_ta.volatility import atr
 
 
 

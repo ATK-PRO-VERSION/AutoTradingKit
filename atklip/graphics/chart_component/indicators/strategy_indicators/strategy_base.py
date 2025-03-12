@@ -43,7 +43,7 @@ class ATKBOT(GraphicsObject):
         self.setFlag(self.GraphicsItemFlag.ItemUsesExtendedStyleOption,True)
         
         self.chart:Chart = chart
-        self.has = {
+        self.has: dict = {
             "name": f"ATKPRO Ver_1.0",
             "y_axis_show":False,
             
@@ -211,7 +211,7 @@ class ATKBOT(GraphicsObject):
                         self.has["inputs"]["rsi_ma_type"].name.lower())
     
     @property
-    def model(self) -> dict:
+    def model(self):
         return ATKBOTModel(self.id,"ATKPRO",self.has["inputs"]["source"].source_name,self.has["inputs"]["key_value_long"],self.has["inputs"]["key_value_short"],
                               self.has["inputs"]["atr_long_period"],self.has["inputs"]["ema_long_period"],
                               self.has["inputs"]["atr_short_period"],self.has["inputs"]["ema_short_period"])

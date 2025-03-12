@@ -4,9 +4,9 @@ from PySide6 import QtCore, QtGui
 from PySide6.QtCore import Signal,Qt,QPointF
 from PySide6.QtGui import QPainter
 # from numpy.array_api import atan2
-from pyqtgraph import ROI
+from atklip.graphics.pyqtgraph import ROI
 import numpy as np
-# from pyqtgraph import *
+# from atklip.graphics.pyqtgraph import *
 import numpy as np
 
 from atklip.app_utils.functions import mkBrush, mkPen

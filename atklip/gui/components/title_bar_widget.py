@@ -30,11 +30,8 @@ class TitleBar(HWIDGET):
         FluentStyleSheet.TITLEBAR.apply(self)
 
     def mousePressEvent(self, event):
-        try:
-            ev_pos = event.position()
-        except:
-            ev_pos = event.pos()
- 
+        ev_pos = event.position()
+
         self.startPos = ev_pos
         self.setCursor(Qt.CursorShape.ClosedHandCursor)
         return super().mousePressEvent(event)
@@ -44,11 +41,8 @@ class TitleBar(HWIDGET):
         self._parent.move(updated_cursor_x, updated_cursor_y)
     
     def mouseMoveEvent(self, event):
-        try:
-            ev_pos = event.position()
-        except:
-            ev_pos = event.pos()
-        
+        ev_pos = event.position()
+ 
         if self.startPos == None:
             return
         
@@ -101,11 +95,7 @@ class DragWidget(PushButton):
         self.sig_mouse_move.connect(self.move_parent,Qt.ConnectionType.AutoConnection)
 
     def mousePressEvent(self, event):
-        try:
-            ev_pos = event.position()
-        except:
-            ev_pos = event.pos()
- 
+        ev_pos = event.position()
         self.startPos = ev_pos
         self.setCursor(Qt.CursorShape.ClosedHandCursor)
         return super().mousePressEvent(event)
@@ -115,14 +105,9 @@ class DragWidget(PushButton):
         self._parent.move(updated_cursor_x, updated_cursor_y)
     
     def mouseMoveEvent(self, event):
-        try:
-            ev_pos = event.position()
-        except:
-            ev_pos = event.pos()
-            
+        ev_pos = event.position()
         if self.startPos == None:
             return
-        
         orig_cursor_position = self.startPos    # lastScenePos()
         if orig_cursor_position == None:
             self.startPos = ev_pos

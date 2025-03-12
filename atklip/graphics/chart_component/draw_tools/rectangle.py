@@ -32,7 +32,7 @@ class Rectangle(SpecialROI):
         self.id = id
         self.reverse = False
         
-        self.has = {
+        self.has: dict = {
             "x_axis_show":True,
             "name": "rectangle",
             "type": "drawtool",

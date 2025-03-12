@@ -15,7 +15,7 @@ from .titlebar import TitleBar
 from .mainlayout import MainWidget
 from atklip.app_utils import *
 from atklip.appmanager.setting import AppConfig
-from atklip.appmanager.worker.threadpool import ThreadPoolExecutor_global,Heavy_ProcessPoolExecutor_global,num_threads
+from atklip.appmanager.worker.threadpool import ThreadPoolExecutor_global,Heavy_ProcessPoolExecutor_global
 
 from .framelesswindow import FramelessMainWindow
 
@@ -51,14 +51,14 @@ class WindowBase(BackgroundAnimationWidget, FramelessMainWindow):
         qconfig.themeChangedFinished.connect(self._onThemeChangedFinished)
         FluentStyleSheet.FLUENT_WINDOW.apply(self)
         
-        "đảm bảo ProcessPoolExecutor được kích hoạt trước"
-        for i in range(num_threads):
-            Heavy_ProcessPoolExecutor_global.submit(print,f"start game {i}")
-
         self.initWindow()
         self.onTabAddRequested()
         self.show()
-    
+
+    @staticmethod
+    def start_worker():
+        pass
+
     def initWindow(self):
         desktop = QApplication.screens()[0].availableGeometry()
         w, h = desktop.width(), desktop.height()

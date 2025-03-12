@@ -34,7 +34,7 @@ class BASE_VWMA(PlotDataItem):
         self.setZValue(700)
         self.chart:Chart = chart
 
-        self.has = {
+        self.has: dict = {
             "name": f"VWMA 10",
             "y_axis_show":False,
             "inputs":{
@@ -77,7 +77,7 @@ class BASE_VWMA(PlotDataItem):
         self.chart_id = _chart_id
         
     @property
-    def model(self) -> dict:
+    def model(self):
         return VWMAModel(self.id,"VWMA",self.chart.jp_candle.source_name,
                          self.has["inputs"]["type"],
                          self.has["inputs"]["length"])
@@ -117,7 +117,7 @@ class BASE_VWMA(PlotDataItem):
         _index,_data = self.INDICATOR.get_data()
         setdata.emit((_index,_data))
         self.sig_change_yaxis_range.emit()
-        self.has["name"] = f"VWMA {self.has["inputs"]["length"]} {self.has["inputs"]["type"]}"
+        self.has["name"] = f"""VWMA {self.has["inputs"]["length"]} {self.has["inputs"]["type"]}"""
         self.sig_change_indicator_name.emit(self.has["name"])
 
     def replace_source(self):
@@ -154,7 +154,7 @@ class BASE_VWMA(PlotDataItem):
                 is_update = True
 
         if is_update:
-            self.has["name"] = f"VWMA {self.has["inputs"]["length"]} {self.has["inputs"]["type"]}"
+            self.has["name"] = f"""VWMA {self.has["inputs"]["length"]} {self.has["inputs"]["type"]}"""
             self.sig_change_indicator_name.emit(self.has["name"])
             
             self.INDICATOR.change_input(dict_ta_params=self.model.__dict__)

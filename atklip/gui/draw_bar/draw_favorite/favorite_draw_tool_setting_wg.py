@@ -66,7 +66,7 @@ class FavoriteSettingMenu(CommandBarView):
             AppConfig.sig_set_single_data.emit((f"drawbar.favorite",[]))
             self.list_favorites = AppConfig.get_config_value(f"drawbar.favorite")
             return
-        if self.list_favorites != []:
+        if self.list_favorites:
             for tool_infor in self.list_favorites:
                 title,icon,tool_name = tool_infor["tool"],tool_infor["icon"],tool_infor["name"]
                 btn_icon =  FIF.__getitem__(icon)

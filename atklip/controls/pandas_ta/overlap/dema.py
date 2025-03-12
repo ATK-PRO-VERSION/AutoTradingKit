@@ -2,7 +2,6 @@
 from numpy import isnan
 from pandas import Series
 from atklip.controls.pandas_ta._typing import DictLike, Int
-from atklip.controls.pandas_ta.maps import Imports
 from atklip.controls.pandas_ta.utils import v_offset, v_pos_default, v_series, v_talib
 from .ema import ema
 
@@ -43,14 +42,10 @@ def dema(
     mode_tal = v_talib(talib)
     offset = v_offset(offset)
 
-    # Calculate
-    if Imports["talib"] and mode_tal:
-        from atklip.controls.talib import DEMA
-        dema = DEMA(close, length)
-    else:
-        ema1 = ema(close=close, length=length, talib=mode_tal)
-        ema2 = ema(close=ema1, length=length, talib=mode_tal)
-        dema = 2 * ema1 - ema2
+
+    ema1 = ema(close=close, length=length, talib=mode_tal)
+    ema2 = ema(close=ema1, length=length, talib=mode_tal)
+    dema = 2 * ema1 - ema2
 
     if all(isnan(dema.to_numpy())):
         return  # Emergency Break

@@ -35,8 +35,8 @@ class BasicDonchianChannels(GraphicsObject):
         self.setFlag(self.GraphicsItemFlag.ItemUsesExtendedStyleOption,True)
         
         self.chart:Chart = chart
-        self.has = {
-            "name": f"DC 20 2",
+        self.has: dict = {
+            "name": "DC 20 2",
             "y_axis_show":False,
             
             "inputs":{
@@ -97,7 +97,7 @@ class BasicDonchianChannels(GraphicsObject):
         self.chart_id = _chart_id
         
     @property
-    def model(self) -> dict:
+    def model(self):
         return DonchainModel(self.id,"DonChain",self.chart.jp_candle.source_name,self.has["inputs"]["period_lower"],
                               self.has["inputs"]["period_upper"])
     
@@ -138,7 +138,7 @@ class BasicDonchianChannels(GraphicsObject):
         xdata,lb,cb,ub= self.INDICATOR.get_data()
         setdata.emit((xdata,lb,cb,ub))
         self.sig_change_yaxis_range.emit()
-        self.has["name"] = f"DC {self.has["inputs"]["period_lower"]} {self.has["inputs"]["period_upper"]}"
+        self.has["name"] = f"""DC {self.has["inputs"]["period_lower"]} {self.has["inputs"]["period_upper"]}"""
         self.sig_change_indicator_name.emit(self.has["name"])
         
     def replace_source(self):
@@ -187,7 +187,7 @@ class BasicDonchianChannels(GraphicsObject):
                 is_update = True
         
         if is_update:
-            self.has["name"] = f"DC {self.has["inputs"]["period_lower"]} {self.has["inputs"]["period_upper"]}"
+            self.has["name"] = f"""DC {self.has["inputs"]["period_lower"]} {self.has["inputs"]["period_upper"]}"""
             self.sig_change_indicator_name.emit(self.has["name"])
             self.INDICATOR.change_input(dict_ta_params=self.model.__dict__)
     

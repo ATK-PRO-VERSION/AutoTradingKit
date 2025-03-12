@@ -14,7 +14,6 @@ class HeavyProcess(QObject):
         self.kwargs = kwargs
         self.executor = Heavy_ProcessPoolExecutor_global
     #     self.thread = ThreadPoolExecutor_global
-
     # def start(self):
     #     self.thread.submit(
     #         self.process

@@ -26,82 +26,7 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QWidget:hover {
-	border: solid;
-    border-width: 0.5px;
-    border-radius: 5px;
-    border-color: #474747;
-}
-
-QWidget:!hover {
-	border: solid;
-    border-width: 0.5px;
-    border-radius: 5px;
-    border-color: transparent;
-}
-
-
-QPushButton {
-    background-color:transparent;
-	border: solid;
-    border-width: 0px;
-    border-radius: 5px;
-    border-color: transparent;
-
-}
-
-QPushButton:hover {
-    /* &quot;bg_two&quot; */
-   background-color: #444551;
-	border: solid;
-    border-width: 0px;
-    border-radius: 5px;
-    border-color: transparent;
-}
-
-QPushButton:!hover {
-    /* &quot;bg_two&quot; */
-   background-color: transparent;
-	border: solid;
-    border-width: 0px;
-    border-radius: 5px;
-    border-color: transparent;
-}
-
-QPushButton:pressed {
-    background-color : #141622;
-	border: solid;
-    border-width: 0px;
-    border-radius: 5px;
-    border-color: transparent;
-}
-
-QLabel {
-    background-color:transparent;
-	color: white;
-    font: 12px;
-    font-family: Time Newroman;
-	border: none;
-}
-
-
-QLabel:hover{
-    background-color:transparent;
-	color: white;
-    font: 12px;
-    font-family: Time Newroman;
-	border: none;
-}
-
-QLabel:!hover{
-    background-color:transparent;
-	color: white;
-    font: 12px;
-    font-family: Time Newroman;
-	border: none;
-}
-
-</string>
+   <string notr="true"/>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="spacing">
@@ -137,10 +62,10 @@ QLabel:!hover{
       <string notr="true"/>
      </property>
      <property name="frameShape">
-      <enum>QFrame::NoFrame</enum>
+      <enum>QFrame::Shape::NoFrame</enum>
      </property>
      <property name="frameShadow">
-      <enum>QFrame::Plain</enum>
+      <enum>QFrame::Shadow::Plain</enum>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <property name="spacing">
@@ -188,8 +113,7 @@ QLabel:!hover{
          </font>
         </property>
         <property name="styleSheet">
-         <string notr="true">color: #eaeaea;
-font: 10pt &quot;Segoe UI&quot;;</string>
+         <string notr="true"/>
         </property>
         <property name="text">
          <string>name_indicator</string>
@@ -198,7 +122,7 @@ font: 10pt &quot;Segoe UI&quot;;</string>
          <bool>true</bool>
         </property>
         <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
         </property>
         <property name="wordWrap">
          <bool>false</bool>

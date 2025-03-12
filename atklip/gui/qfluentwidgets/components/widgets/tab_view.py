@@ -204,7 +204,7 @@ class TabItem(PushButton):
         self._forwardMouseEvent(e)
 
     def _forwardMouseEvent(self, e: QMouseEvent):
-        pos = self.mapToParent(e.pos())
+        pos = self.mapToParent(e.position())
         event = QMouseEvent(e.type(), pos, e.button(),
                             e.buttons(), e.modifiers())
         QApplication.sendEvent(self.parent(), event)
@@ -273,7 +273,7 @@ class TabItem(PushButton):
         painter.strokePath(path, bottomBorderColor)
 
         # draw background
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
         rect = self.rect().adjusted(1, 1, -1, -1)
         painter.setBrush(
             self.darkSelectedBackgroundColor if isDark else self.lightSelectedBackgroundColor)
@@ -292,7 +292,7 @@ class TabItem(PushButton):
                 0, 0, 0, 10)
 
         painter.setBrush(color)
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
         painter.drawRoundedRect(self.rect().adjusted(
             1, 1, -1, -1), self.borderRadius, self.borderRadius)
 
@@ -307,7 +307,7 @@ class TabItem(PushButton):
             rect = QRectF(33, 0, self.width() - dw, self.height())
 
         pen = QPen()
-        color = Qt.white if isDarkTheme() else Qt.black
+        color = Qt.GlobalColor.white if isDarkTheme() else Qt.GlobalColor.black
         color = self.textColor or color
         rw = rect.width()
 
@@ -315,15 +315,15 @@ class TabItem(PushButton):
             gradient = QLinearGradient(rect.x(), 0, tw+rect.x(), 0)
             gradient.setColorAt(0, color)
             gradient.setColorAt(max(0, (rw - 10) / tw), color)
-            gradient.setColorAt(max(0, rw / tw), Qt.transparent)
-            gradient.setColorAt(1, Qt.transparent)
+            gradient.setColorAt(max(0, rw / tw), Qt.GlobalColor.transparent)
+            gradient.setColorAt(1, Qt.GlobalColor.transparent)
             pen.setBrush(QBrush(gradient))
         else:
             pen.setColor(color)
 
         painter.setPen(pen)
         painter.setFont(self.font())
-        painter.drawText(rect, Qt.AlignVCenter | Qt.AlignLeft, self.text())
+        painter.drawText(rect, Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft, self.text())
 
 
 class TabBar(SingleDirectionScrollArea):
@@ -424,7 +424,7 @@ class TabBar(SingleDirectionScrollArea):
         """
         return self.insertTab(-1, routeKey, text, icon, onClick)
 
-    def insertTab(self, index: int, routeKey: str, text: str, icon: Union[QIcon, str, FluentIconBase] = None,
+    def insertTab(self, index: int, routeKey: str, text: str, icon: Union[QIcon, str, FluentIconBase, None] = None,
                   onClick=None):
         """ insert tab
 
@@ -738,22 +738,22 @@ class TabBar(SingleDirectionScrollArea):
 
     def mousePressEvent(self, e: QMouseEvent):
         super().mousePressEvent(e)
-        if not self.isMovable() or e.button() != Qt.LeftButton or \
-                not self.itemLayout.geometry().contains(e.pos()):
+        if not self.isMovable() or e.button() != Qt.MouseButton.LeftButton or \
+                not self.itemLayout.geometry().contains(e.position()):
             return
 
-        self.dragPos = e.pos()
+        self.dragPos = e.position()
 
     def mouseMoveEvent(self, e: QMouseEvent):
         super().mouseMoveEvent(e)
 
-        if not self.isMovable() or self.count() <= 1 or not self.itemLayout.geometry().contains(e.pos()):
+        if not self.isMovable() or self.count() <= 1 or not self.itemLayout.geometry().contains(e.position()):
             return
 
         index = self.currentIndex()
         item = self.tabItem(index)
-        dx = e.pos().x() - self.dragPos.x()
-        self.dragPos = e.pos()
+        dx = e.position().x() - self.dragPos.x()
+        self.dragPos = e.position()
 
         # first tab can't move left
         if index == 0 and dx < 0 and item.x() <= 0:

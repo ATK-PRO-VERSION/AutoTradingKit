@@ -19,7 +19,7 @@ class ReplayObject(GraphicsObject):
         GraphicsObject.__init__(self)
         self.chart: Chart = chart
         
-        self.has = {
+        self.has: dict = {
             "name": "rectangle",
             "type": "drawtool",
             "id": id

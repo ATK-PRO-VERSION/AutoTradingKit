@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from pandas import Series
 from atklip.controls.pandas_ta._typing import DictLike, Int
-from atklip.controls.pandas_ta.maps import Imports
 from atklip.controls.pandas_ta.utils import v_offset, v_series, v_talib
 
 
@@ -44,13 +43,8 @@ def wcp(
     mode_tal = v_talib(talib)
     offset = v_offset(offset)
 
-    # Calculate
-    if Imports["talib"] and mode_tal:
-        from atklip.controls.talib import WCLPRICE
-        wcp = WCLPRICE(high, low, close)
-    else:
-        weight = high.to_numpy() + low.to_numpy() + 2 * close.to_numpy()
-        wcp = Series(weight, index=close.index)
+    weight = high.to_numpy() + low.to_numpy() + 2 * close.to_numpy()
+    wcp = Series(weight, index=close.index)
 
     # Offset
     if offset != 0:

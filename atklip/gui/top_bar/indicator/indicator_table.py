@@ -384,8 +384,8 @@ class BasicMenu(TableView):
         self.table_model.filterData(keyword)
     
     def _load_favorites(self): #->"IndicatorType"
-        self.dict_favorites = AppConfig.get_config_value(f"topbar.indicator.favorite",{})
-        if self.dict_favorites == {}:
+        self.dict_favorites = AppConfig.get_config_value(f"topbar.indicator.favorite")
+        if not self.dict_favorites:
             AppConfig.sig_set_single_data.emit((f"topbar.indicator.favorite",{}))
             self.dict_favorites = AppConfig.get_config_value(f"topbar.indicator.favorite")
         
@@ -535,8 +535,8 @@ class BasicMenu(TableView):
         super().leaveEvent(ev)
     
     def mouseMoveEvent(self,ev:QMouseEvent):
-        pos = ev.pos()
-        index = self.indexAt(pos)
+        pos = ev.position()
+        index = self.indexAt(pos.toPoint())
         self.row_hover = index.row()
         if self.delegate:
             self.delegate.setHoverRow(index.row())

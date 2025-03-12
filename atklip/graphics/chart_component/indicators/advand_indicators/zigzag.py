@@ -36,7 +36,7 @@ class BasicZIGZAG(PlotDataItem):
 
         self._precision = self.chart._precision
         
-        self.has = {
+        self.has: dict = {
             "name": f"ZIGZAG 10 1",
             "y_axis_show":False,
             "inputs":{
@@ -164,7 +164,7 @@ class BasicZIGZAG(PlotDataItem):
             self.has["inputs"][_input] = _source
             update = True
         if update:
-            self.has["name"] = f"ZIGZAG {self.has["inputs"]["legs"]} {self.has["inputs"]["deviation"]}"
+            self.has["name"] = f"""ZIGZAG {self.has["inputs"]["legs"]} {self.has["inputs"]["deviation"]}"""
             self.sig_change_indicator_name.emit(self.has["name"])
             self.INDICATOR.change_inputs(_input,_source)
     
@@ -192,7 +192,7 @@ class BasicZIGZAG(PlotDataItem):
     def regen_indicator(self,setdata):
         xdata, zz_value = self.INDICATOR.get_data()
         setdata.emit((xdata,zz_value))   
-        self.has["name"] = f"ZIGZAG {self.has["inputs"]["legs"]} {self.has["inputs"]["deviation"]}"
+        self.has["name"] = f"""ZIGZAG {self.has["inputs"]["legs"]} {self.has["inputs"]["deviation"]}"""
         self.sig_change_indicator_name.emit(self.has["name"])
         self.sig_change_yaxis_range.emit()
     def load_historic_data(self,_len,setdata):

@@ -6,7 +6,7 @@
         "CheckUpdateAtStartUp": true
     },
     "Folders": {
-        "Download": "E:/AutoTradingKit/app/download",
+        "Download": "/media/mr-s/INSTALL/atk_ubuntu/AutoTradingKit/app/download",
         "LocalMusic": []
     },
     "MainWindow": {

@@ -7,10 +7,7 @@ Distributed under MIT/X11 license. See license.txt for more information.
 import decimal
 import math
 import re
-import struct
-import sys
 import warnings
-from collections import OrderedDict
 
 import numpy as np
 

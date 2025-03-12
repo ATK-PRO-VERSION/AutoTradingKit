@@ -2,7 +2,7 @@ from typing import List
 from PySide6.QtCore import Qt, QRectF, QPointF, Signal
 from PySide6.QtGui import QPainter,QPicture
 from PySide6.QtWidgets import QGraphicsItem
-from pyqtgraph import TextItem, Point, ArrowItem, mkPen,mkBrush
+from atklip.graphics.pyqtgraph import TextItem, Point, ArrowItem, mkPen,mkBrush
 
 from atklip.app_utils.functions import mkColor
 
@@ -59,7 +59,7 @@ class RangePolyLine(SpecialROI):     # for date price range
         self.interval = self.chart.interval
         self.precision = self.chart._precision
         
-        self.has = {
+        self.has: dict = {
             "x_axis_show":True,
             "name": "rectangle",
             "type": "drawtool",

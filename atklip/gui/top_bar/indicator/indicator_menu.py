@@ -1,9 +1,8 @@
 
-from typing import List
 from atklip.gui.qfluentwidgets.components import SearchLineEdit
 from atklip.gui.qfluentwidgets.components.container import VWIDGET,HWIDGET
 from atklip.gui.qfluentwidgets import FluentIcon as FIF
-from atklip.gui.components import ScrollInterface,ICON_TEXT_BUTTON,Indicator_Item,MovingWidget
+from atklip.gui.components import ICON_TEXT_BUTTON,Indicator_Item,MovingWidget
 from atklip.gui.qfluentwidgets.common import FluentStyleSheet
 from atklip.appmanager.setting import AppConfig
 from atklip.controls import IndicatorType

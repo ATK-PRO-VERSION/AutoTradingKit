@@ -1,96 +1,14 @@
 # -*- coding: utf-8 -*-
 from concurrent.futures import Future
-from pandas import Series
 from atklip.appmanager.worker.return_worker import HeavyProcess
-from atklip.controls.pandas_ta._typing import DictLike, Int
-from atklip.controls.pandas_ta._typing import DictLike
-from atklip.controls.overlap.dema import dema
-from atklip.controls.overlap.ema import ema
-from atklip.controls.overlap.fwma import fwma
-from atklip.controls.overlap.hma import hma
-from atklip.controls.overlap.linreg import linreg
-from atklip.controls.overlap.midpoint import midpoint
-from atklip.controls.overlap.pwma import pwma
-from atklip.controls.overlap.rma import rma
-from atklip.controls.overlap.sinwma import sinwma
-from atklip.controls.overlap.sma import sma
-from atklip.controls.overlap.smma import smma
-from atklip.controls.overlap.ssf import ssf
-from atklip.controls.overlap.ssf3 import ssf3
-
-from atklip.controls.overlap.swma import swma
-from atklip.controls.overlap.t3 import t3
-from atklip.controls.overlap.tema import tema
-from atklip.controls.overlap.trima import trima
-from atklip.controls.overlap.vidya import vidya
-from atklip.controls.overlap.wma import wma
-from atklip.controls.overlap.zlma import zlma
-
-
-
-def ma(name: str = None, source: Series = None,length: Int = None,mamode: str="ema") -> Series:
-    """Simple MA Utility for easier MA selection
-
-    Available MAs:
-        dema, ema, fwma, hma, linreg, midpoint, pwma, rma, sinwma, sma, ssf,
-        swma, t3, tema, trima, vidya, wma
-
-    Examples:
-        ema8 = ta.ma("ema", df.close, length=8)
-        sma50 = ta.ma("sma", df.close, length=50)
-        pwma10 = ta.ma("pwma", df.close, length=10, asc=False)
-
-    Args:
-        name (str): One of the Available MAs. Default: "ema"
-        source (pd.Series): The 'source' Series.
-
-    Kwargs:
-        Any additional kwargs the MA may require.
-
-    Returns:
-        pd.Series: New feature generated.
-    """
-    _mas = [
-        "dema", "ema", "fwma", "hma", "linreg", "midpoint", "pwma", "rma","smma"
-        "sinwma", "sma", "ssf", "swma", "t3", "tema", "trima", "vidya", "wma","zlma"
-    ]
-    if name is None and source is None:
-        return _mas
-    elif isinstance(name, str) and name.lower() in _mas:
-        name = name.lower()
-    else:  # "ema"
-        name = "ema"
-    
-    if   name == "dema": return dema(source, length)
-    elif name == "fwma": return fwma(source, length)
-    elif name == "hma": return hma(source, length)
-    elif name == "linreg": return linreg(source, length)
-    elif name == "midpoint": return midpoint(source, length)
-    elif name == "pwma": return pwma(source, length)
-    elif name == "rma": return rma(source, length)
-    elif name == "sinwma": return sinwma(source, length)
-    elif name == "sma": return sma(source, length)
-    elif name == "smma": return smma(source, length,mamode)
-    elif name == "ssf": return ssf(source, length)
-    elif name == "ssf3": return ssf3(source, length)
-    elif name == "swma": return swma(source, length)
-    elif name == "t3": return t3(source, length)
-    elif name == "tema": return tema(source, length)
-    elif name == "trima": return trima(source, length)
-    elif name == "vidya": return vidya(source, length)
-    elif name == "wma": return wma(source, length)
-    elif name == "zlma": return zlma(source, length,mamode)
-    else: return ema(source, length)
-
-
+from atklip.controls.ma_overload import ma
 import numpy as np
 import pandas as pd
 from typing import List
 from .ohlcv import   OHLCV
 from atklip.controls.candle import JAPAN_CANDLE,HEIKINASHI,SMOOTH_CANDLE,N_SMOOTH_CANDLE
 from atklip.appmanager import ThreadPoolExecutor_global as ApiThreadPool
-
-from PySide6.QtCore import Qt, Signal,QObject
+from PySide6.QtCore import Signal,QObject
 
 
 class VolumeWithMa(QObject):

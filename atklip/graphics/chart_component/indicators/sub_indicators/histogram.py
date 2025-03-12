@@ -21,7 +21,7 @@ class Histogram(GraphicsObject):
         """Choose colors of candle"""
         GraphicsObject.__init__(self)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemUsesExtendedStyleOption,True)
-        self.has = {
+        self.has: dict = {
             "name": f"{_type.name}",
             "y_axis_show":False,
             "inputs":{
@@ -163,7 +163,7 @@ class SingleHistogram(GraphicsObject):
         """Choose colors of candle"""
         GraphicsObject.__init__(self)
         
-        self.has = {
+        self.has: dict = {
             "name": f"",
             "inputs":{
                     "source":_candles,

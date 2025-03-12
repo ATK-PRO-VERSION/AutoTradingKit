@@ -38,7 +38,7 @@ class CandlePattern(GraphicsObject):
         self.setFlag(self.GraphicsItemFlag.ItemUsesExtendedStyleOption,True)
         
         self.chart:Chart = chart
-        self.has = {
+        self.has: dict = {
             "name": f"BB 20 2",
             "y_axis_show":False,
             "inputs":{

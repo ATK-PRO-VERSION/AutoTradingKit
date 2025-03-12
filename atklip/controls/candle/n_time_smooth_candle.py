@@ -38,7 +38,7 @@ class N_SMOOTH_CANDLE(QObject):
             self.id_exchange:str = dict_candle_params["id_exchange"]
             self.symbol:str = dict_candle_params["symbol"]
             self.interval:str = dict_candle_params["interval"]
-            self.mamode:str = dict_candle_params["mamode"]
+            self.mamode:PD_MAType = dict_candle_params["mamode"]
             self.ma_leng:int= dict_candle_params["ma_leng"]
             self.source:str = dict_candle_params["source"]
             self.precision = dict_candle_params["precision"]
@@ -92,7 +92,7 @@ class N_SMOOTH_CANDLE(QObject):
             self.id_exchange:str = dict_candle_params["id_exchange"]
             self.symbol:str = dict_candle_params["symbol"]
             self.interval:str = dict_candle_params["interval"]
-            self.mamode:str = dict_candle_params["mamode"]
+            self.mamode:PD_MAType = dict_candle_params["mamode"]
             self.ma_leng:int= dict_candle_params["ma_leng"]
             self.source:str = dict_candle_params["source"]
             self.precision = dict_candle_params["precision"]
@@ -101,7 +101,7 @@ class N_SMOOTH_CANDLE(QObject):
             self.name:str=dict_candle_params.get("name")
             self.n:int = dict_candle_params["n_smooth"]
 
-            source_name = f"{self.chart_id}-{self.canlde_id}-{self.id_exchange}-{self.source}-{self.name}-{self.symbol}-{self.interval}-{self.mamode}-{self.ma_leng}-{self.n}"
+            source_name = f"{self.chart_id}-{self.canlde_id}-{self.id_exchange}-{self.source}-{self.name}-{self.symbol}-{self.interval}-{self.mamode.name}-{self.ma_leng}-{self.n}".encode("utf-8").decode("utf-8")
             self.source_name = source_name
         self.first_gen = False
         self.is_genering = True        
@@ -395,13 +395,13 @@ class N_SMOOTH_CANDLE(QObject):
         times = df["time"]
         indexs = df["index"]
         for i in range(self.n):
-            highs = ma(self.mamode, df["high"],length=self.ma_leng).dropna().round(self.precision)
-            lows = ma(self.mamode, df["low"],length=self.ma_leng).dropna().round(self.precision)
-            closes = ma(self.mamode, df["close"],length=self.ma_leng).dropna().round(self.precision)
-            opens = ma(self.mamode, df["open"],length=self.ma_leng).dropna().round(self.precision)
-            hl2s = ma(self.mamode, df["hl2"],length=self.ma_leng).dropna().round(self.precision)
-            hlc3s = ma(self.mamode, df["hlc3"],length=self.ma_leng).dropna().round(self.precision)
-            ohlc4s = ma(self.mamode, df["ohlc4"],length=self.ma_leng).dropna().round(self.precision)
+            highs = ma(self.mamode.name, df["high"],length=self.ma_leng).dropna().round(self.precision)
+            lows = ma(self.mamode.name, df["low"],length=self.ma_leng).dropna().round(self.precision)
+            closes = ma(self.mamode.name, df["close"],length=self.ma_leng).dropna().round(self.precision)
+            opens = ma(self.mamode.name, df["open"],length=self.ma_leng).dropna().round(self.precision)
+            hl2s = ma(self.mamode.name, df["hl2"],length=self.ma_leng).dropna().round(self.precision)
+            hlc3s = ma(self.mamode.name, df["hlc3"],length=self.ma_leng).dropna().round(self.precision)
+            ohlc4s = ma(self.mamode.name, df["ohlc4"],length=self.ma_leng).dropna().round(self.precision)
             
             df = pd.DataFrame({ "open": opens,
                                     "high": highs,
@@ -512,7 +512,7 @@ class N_SMOOTH_CANDLE(QObject):
         self.is_histocric_load = False
         _pre_len = len(self.df)
         df = self._candles.get_df().iloc[:-1*_pre_len]
-        process = HeavyProcess(self.pro_gen_data,self._gen_historic_data,df,self.n,self.mamode,self.ma_leng,self.precision)
+        process = HeavyProcess(self.pro_gen_data,self._gen_historic_data,df,self.n,self.mamode.name,self.ma_leng,self.precision)
         process.start()
     
     def callback(self, future: Future):
@@ -536,7 +536,7 @@ class N_SMOOTH_CANDLE(QObject):
         self.dict_n_frame.clear()
         self.dict_n_ma.clear()
         df = self._candles.get_df()
-        process = HeavyProcess(self.pro_gen_data,self.callback,df,self.n,self.mamode,self.ma_leng,self.precision)
+        process = HeavyProcess(self.pro_gen_data,self.callback,df,self.n,self.mamode.name,self.ma_leng,self.precision)
         process.start()
 
     def callback_update_ma_ohlc(self,future: Future):
@@ -575,7 +575,7 @@ class N_SMOOTH_CANDLE(QObject):
             if _new_time == _last_time:
                 self._is_update =  True
             
-            process = HeavyProcess(self.pro_gen_data,self.callback_update_ma_ohlc,df,self.n,self.mamode,self.ma_leng,self.precision)
+            process = HeavyProcess(self.pro_gen_data,self.callback_update_ma_ohlc,df,self.n,self.mamode.name,self.ma_leng,self.precision)
             process.start()
         else:
             pass

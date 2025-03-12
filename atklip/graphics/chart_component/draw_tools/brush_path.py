@@ -24,7 +24,7 @@ class PathROI(BasePolyLineROI):
         self.uid = None
         self.id = id
         
-        self.has = {
+        self.has: dict = {
             "x_axis_show":True,
             "name": "rectangle",
             "type": "drawtool",

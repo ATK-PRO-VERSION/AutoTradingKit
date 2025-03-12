@@ -105,13 +105,13 @@ class Slider(QSlider):
             self.setMinimumWidth(22)
 
     def mousePressEvent(self, e: QMouseEvent):
-        self._pressedPos = e.pos()
-        self.setValue(self._posToValue(e.pos()))
+        self._pressedPos = e.position()
+        self.setValue(self._posToValue(e.position()))
         self.clicked.emit(self.value())
 
     def mouseMoveEvent(self, e: QMouseEvent):
-        self.setValue(self._posToValue(e.pos()))
-        self._pressedPos = e.pos()
+        self.setValue(self._posToValue(e.position()))
+        self._pressedPos = e.position()
         self.sliderMoved.emit(self.value())
 
     @property
@@ -180,9 +180,9 @@ class ClickableSlider(QSlider):
         super().mousePressEvent(e)
 
         if self.orientation() == Qt.Horizontal:
-            value = int(e.pos().x() / self.width() * self.maximum())
+            value = int(e.position().x() / self.width() * self.maximum())
         else:
-            value = int((self.height()-e.pos().y()) /
+            value = int((self.height()-e.position().y()) /
                         self.height() * self.maximum())
 
         self.setValue(value)

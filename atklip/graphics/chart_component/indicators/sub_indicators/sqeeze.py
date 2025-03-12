@@ -41,7 +41,7 @@ class BaSicSqeeze(GraphicsObject):
 
         self._precision = self.chart._precision
         
-        self.has = {
+        self.has: dict = {
             "name": f"SQEEZEE 20 2 10 1.5",
             "y_axis_show":True,
             "inputs":{
@@ -108,7 +108,7 @@ class BaSicSqeeze(GraphicsObject):
         self.chart_id = _chart_id
         
     @property
-    def model(self) -> dict:
+    def model(self):
         return SQeezeModel(self.id,"SQEEZE",self.chart.jp_candle.source_name,
                         self.has["inputs"]["bb_length"],
                         self.has["inputs"]["bb_std"],
@@ -163,7 +163,7 @@ class BaSicSqeeze(GraphicsObject):
         xdata,histogram= self.INDICATOR.get_data()
         self.reset_histogram((xdata,histogram))
         setdata.emit((xdata,histogram))
-        self.has["name"] = f"SQZ {self.has["inputs"]["mamode"].name} {self.has["inputs"]["bb_length"]} {self.has["inputs"]["bb_std"]} {self.has["inputs"]["kc_length"]} {self.has["inputs"]["kc_scalar"]}"
+        self.has["name"] = f"""SQZ {self.has["inputs"]["mamode"].name} {self.has["inputs"]["bb_length"]} {self.has["inputs"]["bb_std"]} {self.has["inputs"]["kc_length"]} {self.has["inputs"]["kc_scalar"]}"""
         self.sig_change_indicator_name.emit(self.has["name"])
         
     def replace_source(self):
@@ -212,7 +212,7 @@ class BaSicSqeeze(GraphicsObject):
                 self.has["inputs"][_input] = _source
                 update = True
         if update:
-            self.has["name"] = f"SQZ {self.has["inputs"]["mamode"].name} {self.has["inputs"]["bb_length"]} {self.has["inputs"]["bb_std"]} {self.has["inputs"]["kc_length"]} {self.has["inputs"]["kc_scalar"]}"
+            self.has["name"] = f"""SQZ {self.has["inputs"]["mamode"].name} {self.has["inputs"]["bb_length"]} {self.has["inputs"]["bb_std"]} {self.has["inputs"]["kc_length"]} {self.has["inputs"]["kc_scalar"]}"""
             self.sig_change_indicator_name.emit(self.has["name"])
             self.INDICATOR.change_input(dict_ta_params=self.model.__dict__)
     

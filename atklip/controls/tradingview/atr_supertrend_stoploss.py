@@ -5,33 +5,7 @@ import pandas as pd
 from atklip.appmanager.worker.return_worker import HeavyProcess
 from atklip.controls.momentum import macd
 from atklip.controls.tradingview.atr_stoploss import atr_stoploss
-from atklip.controls.overlap.supertrend import supertrend
-
-def paire_data(INDICATOR:pd.DataFrame):
-    try:
-        column_names = INDICATOR.columns.tolist()
-        SUPERT_name = ''
-        SUPERTd_name = ''
-        SUPERTl_name = ''
-        SUPERTs_name = ''
-        for name in column_names:
-            if name.__contains__("SUPERTt"):
-                SUPERT_name = name
-            elif name.__contains__("SUPERTd"):
-                SUPERTd_name = name
-            elif name.__contains__("SUPERTl"):
-                SUPERTl_name = name
-            elif name.__contains__("SUPERTs"):
-                SUPERTs_name = name
-                
-        SUPERTt = INDICATOR[SUPERT_name].dropna().round(6)
-        SUPERTd = INDICATOR[SUPERTd_name].dropna().round(6)
-        SUPERTl = INDICATOR[SUPERTl_name].round(6)
-        SUPERTs = INDICATOR[SUPERTs_name].round(6)
-        return SUPERTt,SUPERTd
-    except:
-        return pd.Series([]),pd.Series([])
-    
+from atklip.controls.pandas_ta.overlap.supertrend import supertrend
 
 def supertrend_with_stoploss(data:pd.DataFrame,
                              supertrend_length,
@@ -74,8 +48,17 @@ def supertrend_with_stoploss(data:pd.DataFrame,
                             )
 
     
-    SUPERTt,SUPERTd = paire_data(INDICATOR)
+    _props = f"_{supertrend_length}_{supertrend_multiplier}"
+
+    SUPERT_name = f"SUPERT{_props}"
+    SUPERTd_name = f"SUPERTd{_props}"
+    SUPERTl_name = f"SUPERTl{_props}"
+    SUPERTs_name = f"SUPERTs{_props}"
     
+    SUPERTt = INDICATOR[SUPERT_name].dropna().round(6)
+    SUPERTd = INDICATOR[SUPERTd_name].dropna().round(6)
+
+
     long_stoploss = data["long_stoploss"].dropna()
     short_stoploss = data["short_stoploss"].dropna()
     

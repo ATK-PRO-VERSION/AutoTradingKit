@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from pandas import Series
 from atklip.controls.pandas_ta._typing import DictLike, Int
-from atklip.controls.pandas_ta.maps import Imports
 from atklip.controls.pandas_ta.utils import v_offset, v_pos_default, v_series, v_talib
 from .sma import sma
 
@@ -45,14 +44,9 @@ def trima(
     mode_tal = v_talib(talib)
     offset = v_offset(offset)
 
-    # Calculate
-    if Imports["talib"] and mode_tal:
-        from atklip.controls.talib import TRIMA
-        trima = TRIMA(close, length)
-    else:
-        half_length = round(0.5 * (length + 1))
-        sma1 = sma(close, length=half_length, talib=mode_tal)
-        trima = sma(sma1, length=half_length, talib=mode_tal)
+    half_length = round(0.5 * (length + 1))
+    sma1 = sma(close, length=half_length, talib=mode_tal)
+    trima = sma(sma1, length=half_length, talib=mode_tal)
 
     # Offset
     if offset != 0:

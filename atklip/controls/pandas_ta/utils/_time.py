@@ -6,20 +6,20 @@ from pandas import DataFrame, Series, Timestamp, to_datetime
 from atklip.controls.pandas_ta._typing import Float, MaybeSeriesFrame, Optional, Tuple, Union
 from atklip.controls.pandas_ta.maps import EXCHANGE_TZ
 
-__all__ = [
-    "df_dates",
-    "df_month_to_date",
-    "df_quarter_to_date",
-    "df_year_to_date",
-    "final_time",
-    "get_time",
-    "mtd",
-    "qtd",
-    "to_utc",
-    "total_time",
-    "unix_convert",
-    "ytd",
-]
+# __all__ = [
+#     "df_dates",
+#     "df_month_to_date",
+#     "df_quarter_to_date",
+#     "df_year_to_date",
+#     "final_time",
+#     "get_time",
+#     "mtd",
+#     "qtd",
+#     "to_utc",
+#     "total_time",
+#     "unix_convert",
+#     "ytd",
+# ]
 
 
 
@@ -65,7 +65,8 @@ def final_time(stime: Float) -> str:
     """Human readable elapsed time. Calculates the final time elapsed since
     stime and returns a string with microseconds and seconds."""
     time_diff = perf_counter() - stime
-    return f"{time_diff * 1000:2.4f} ms ({time_diff:2.4f} s)"
+    _kq = f"{time_diff * 1000:2.4f} ms ({time_diff:2.4f} s)"
+    return _kq.encode('utf-8').decode('utf-8')
 
 
 def get_time(

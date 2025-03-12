@@ -1,24 +1,15 @@
 # -*- coding: utf-8 -*-
-from numpy import convolve, ones
-from numba import njit
 from pandas import Series
-from atklip.controls.pandas_ta._typing import Array, DictLike, Int
-from atklip.controls.pandas_ta.maps import Imports
+from atklip.controls.pandas_ta._typing import DictLike, Int
 from atklip.controls.pandas_ta.utils import (
-    nb_prepend,
     v_offset,
     v_pos_default,
     v_series,
     v_talib
 )
+from atklip.controls.pandas_ta.utils._numba import nb_sma
 
 
-
-# Fast SMA Options: https://github.com/numba/numba/issues/4119
-@njit(cache=True)
-def nb_sma(x, n):
-    result = convolve(ones(n) / n, x)[n - 1:1 - n]
-    return nb_prepend(result, n - 1)
 
 
 def sma(
@@ -62,14 +53,9 @@ def sma(
     mode_tal = v_talib(talib)
     offset = v_offset(offset)
 
-    # Calculate
-    if Imports["talib"] and mode_tal and length > 1:
-        from atklip.controls.talib import SMA
-        sma = SMA(close, length)
-    else:
-        np_close = close.to_numpy()
-        sma = nb_sma(np_close, length)
-        sma = Series(sma, index=close.index)
+    np_close = close.to_numpy()
+    sma = nb_sma(np_close, length)
+    sma = Series(sma, index=close.index)
 
     # Offset
     if offset != 0:

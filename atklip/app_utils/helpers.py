@@ -202,7 +202,7 @@ def convert_number(old_max: float, old_min: float, new_max: float, new_min: floa
     """
     # validation
     if old_value > old_max or old_value < old_min:
-        raise ValueError(f'old_value:{old_value} must be within the range. {old_min}-{old_max}')
+        raise ValueError(f'old_value:{old_value} must be within the range. {old_min}-{old_max}'.encode("utf-8").decode("utf-8"))
 
     old_range = (old_max - old_min)
     new_range = (new_max - new_min)
@@ -321,7 +321,7 @@ def floor_with_precision(num: float, precision: int = 0) -> float:
 
 
 def format_currency(num: float) -> str:
-    return f'{num:,}'
+    return f'{num:,}'.encode("utf-8").decode("utf-8")
 
 
 def generate_unique_id() -> str:
@@ -429,9 +429,9 @@ def is_valid_uuid(uuid_to_test: str, version: int = 4) -> bool:
 
 def key(exchange: str, symbol: str, timeframe: str = None):
     if timeframe is None:
-        return f'{exchange}-{symbol}'
+        return f'{exchange}-{symbol}'.encode("utf-8").decode("utf-8")
 
-    return f'{exchange}-{symbol}-{timeframe}'
+    return f'{exchange}-{symbol}-{timeframe}'.encode("utf-8").decode("utf-8")
 
 
 
@@ -836,7 +836,7 @@ def get_os() -> str:
     elif platform.system() == 'Windows':
         return 'windows'
     else:
-        raise NotImplementedError(f'Unsupported OS: "{platform.system()}"')
+        raise NotImplementedError(f'Unsupported OS: "{platform.system()}"'.encode("utf-8").decode("utf-8"))
 
 
 # a function that returns boolean whether or not the code is being executed inside a docker container

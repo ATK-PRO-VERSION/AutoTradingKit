@@ -12,7 +12,7 @@ from PySide6 import QtCore, QtGui
 from PySide6.QtCore import Slot, Qt, Signal, QEvent, QSize, QPointF, QKeyCombination, QThreadPool
 from PySide6.QtGui import QMovie, QKeyEvent, QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QLabel, QPushButton, QFrame,QMessageBox
-from pyqtgraph import InfiniteLine, mkPen, mkColor, PlotDataItem,mkBrush
+from atklip.graphics.pyqtgraph import InfiniteLine, mkPen, mkColor, PlotDataItem,mkBrush
 
 from atklip.graphics.chart_component.base_items.rs_object import RSObject
 

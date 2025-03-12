@@ -2,6 +2,8 @@ build exe bằng nuitka và upx : https://github.com/upx/upx
 https://pyarmor.dashingsoft.com/ pyamor
 ** khi build exe hãy thêm --hidden-import multiprocessing vào tham số pyinstaller
 
+pyinstaller --noconfirm --onedir --windowed --icon "E:\AutoTradingKit\atklip\image\appico.ico" --noconsole --add-data "E:\AutoTradingKit\build\lib.win-amd64-cpython-312\atklip;atklip/" --hidden-import "pandas" --hidden-import "pytz" --hidden-import "dateutil" --hidden-import "six" --hidden-import "numba" --hidden-import "numpy" --hidden-import "arrow" --hidden-import "click" --hidden-import "qframelesswindow" --hidden-import "darkdetect" --hidden-import "colorthief" --hidden-import "scipy" --hidden-import "PIL" --hidden-import "ccxt" --hidden-import "OpenGL" --hidden-import "pandas_datareader" --hidden-import "pyarrow" --hidden-import "websockets" --hidden-import "psygnal" --hidden-import "pdf2image" --hidden-import "aiohttp" --hidden-import "aiodns" --hidden-import "attr" --hidden-import "attrs" --hidden-import "yarl" --hidden-import "propcache" --hidden-import "aiohappyeyeballs" --hidden-import "aiosignal" --hidden-import "frozenlist" --hidden-import "multiprocessing" --collect-submodules "ccxt" --collect-submodules "numba" --collect-submodules "numpy" --collect-submodules "aiohttp" --add-data "E:\AutoTradingKit\bin;bin/"  "E:\AutoTradingKit\ATK.py"
+
 API chứng khoán VN:
 
 https://github.com/vietfin/vietfin/tree/main

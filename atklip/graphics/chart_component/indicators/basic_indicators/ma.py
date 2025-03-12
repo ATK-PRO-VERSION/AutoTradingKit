@@ -34,7 +34,7 @@ class BasicMA(PlotDataItem):
         self.setZValue(999)
         self.chart:Chart = chart
 
-        self.has = {
+        self.has: dict = {
             "name": f"{indicator_type.value} {_type} {length}",
             "y_axis_show":False,
             "inputs":{
@@ -79,7 +79,7 @@ class BasicMA(PlotDataItem):
         self.chart_id = _chart_id
         
     @property
-    def model(self) -> dict:
+    def model(self):
         return MAModel(self.id,"MA",self.chart.jp_candle.source_name,self.has["inputs"]["mamode"].name.lower(),
                               self.has["inputs"]["type"],self.has["inputs"]["length"])
     
@@ -118,7 +118,7 @@ class BasicMA(PlotDataItem):
         _index,_data = self.INDICATOR.get_data()
         setdata.emit((_index,_data))
         self.sig_change_yaxis_range.emit()
-        self.has["name"] = f"{self.has["inputs"]["mamode"].name} {self.has["inputs"]["length"]} {self.has["inputs"]["type"]}"
+        self.has["name"] = f"""{self.has["inputs"]["mamode"].name} {self.has["inputs"]["length"]} {self.has["inputs"]["type"]}"""
         self.sig_change_indicator_name.emit(self.has["name"])
 
     def replace_source(self):
@@ -163,7 +163,7 @@ class BasicMA(PlotDataItem):
                 self.has["inputs"][_input] = _source
                 is_update = True
         if is_update:
-            self.has["name"] = f"{self.has["inputs"]["mamode"].name} {self.has["inputs"]["length"]} {self.has["inputs"]["type"]}"
+            self.has["name"] = f"""{self.has["inputs"]["mamode"].name} {self.has["inputs"]["length"]} {self.has["inputs"]["type"]}"""
             self.sig_change_indicator_name.emit(self.has["name"])
             
             self.INDICATOR.change_input(dict_ta_params=self.model.__dict__)

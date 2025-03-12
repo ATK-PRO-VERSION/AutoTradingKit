@@ -42,8 +42,8 @@ class UTBOT(GraphicsObject):
         self.setFlag(self.GraphicsItemFlag.ItemUsesExtendedStyleOption,True)
         
         self.chart:Chart = chart
-        self.has = {
-            "name": f"UTBOT Alert",
+        self.has: dict = {
+            "name": "UTBOT Alert",
             "y_axis_show":False,
             
             "inputs":{
@@ -90,7 +90,7 @@ class UTBOT(GraphicsObject):
         self.chart_id = _chart_id
 
     @property
-    def model(self) -> dict:
+    def model(self):
         return UTBOTModel(self.id,"UTBOT",self.has["inputs"]["source"].source_name,self.has["inputs"]["key_value_long"],self.has["inputs"]["key_value_short"],
                               self.has["inputs"]["atr_long_period"],self.has["inputs"]["ema_long_period"],
                               self.has["inputs"]["atr_short_period"],self.has["inputs"]["ema_short_period"])
@@ -181,7 +181,7 @@ class UTBOT(GraphicsObject):
         xdata,_long,_short= self.INDICATOR.get_data()
         setdata.emit((xdata,_long,_short))
         self.sig_change_yaxis_range.emit()
-        self.has["name"] = f"UTBOT Ver_1.0"
+        self.has["name"] = "UTBOT Ver_1.0"
         self.sig_change_indicator_name.emit(self.has["name"])
         
     def replace_source(self):
@@ -222,7 +222,7 @@ class UTBOT(GraphicsObject):
                 is_update = True
         
         if is_update:
-            self.has["name"] = f"UTBOT"
+            self.has["name"] = "UTBOT"
             self.sig_change_indicator_name.emit(self.has["name"])
             self.INDICATOR.change_input(dict_ta_params=self.model.__dict__)
     

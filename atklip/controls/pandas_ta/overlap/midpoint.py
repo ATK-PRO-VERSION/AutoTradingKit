@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from pandas import Series
 from atklip.controls.pandas_ta._typing import DictLike, Int
-from atklip.controls.pandas_ta.maps import Imports
 from atklip.controls.pandas_ta.utils import v_offset, v_pos_default, v_series, v_talib
 
 
@@ -41,14 +40,9 @@ def midpoint(
     mode_tal = v_talib(talib)
     offset = v_offset(offset)
 
-    # Calculate
-    if Imports["talib"] and mode_tal:
-        from atklip.controls.talib import MIDPOINT
-        midpoint = MIDPOINT(close, length)
-    else:
-        lowest = close.rolling(length, min_periods=min_periods).min()
-        highest = close.rolling(length, min_periods=min_periods).max()
-        midpoint = 0.5 * (lowest + highest)
+    lowest = close.rolling(length, min_periods=min_periods).min()
+    highest = close.rolling(length, min_periods=min_periods).max()
+    midpoint = 0.5 * (lowest + highest)
 
     # Offset
     if offset != 0:

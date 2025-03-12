@@ -26,7 +26,7 @@ class Vertical_line(InfiniteLine):
         self.id = id
         self.popup_setting_tool = None
         self.isSelected = False
-        self.has = {
+        self.has: dict = {
             "x_axis_show":True,
             "name": "rectangle",
             "type": "drawtool",

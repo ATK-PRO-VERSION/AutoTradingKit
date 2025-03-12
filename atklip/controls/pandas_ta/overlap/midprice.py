@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from pandas import Series
 from atklip.controls.pandas_ta._typing import DictLike, Int
-from atklip.controls.pandas_ta.maps import Imports
 from atklip.controls.pandas_ta.utils import v_offset, v_pos_default, v_series, v_talib
 
 
@@ -44,14 +43,10 @@ def midprice(
     mode_tal = v_talib(talib)
     offset = v_offset(offset)
 
-    # Calculate
-    if Imports["talib"] and mode_tal:
-        from atklip.controls.talib import MIDPRICE
-        midprice = MIDPRICE(high, low, length)
-    else:
-        lowest_low = low.rolling(length, min_periods=min_periods).min()
-        highest_high = high.rolling(length, min_periods=min_periods).max()
-        midprice = 0.5 * (lowest_low + highest_high)
+
+    lowest_low = low.rolling(length, min_periods=min_periods).min()
+    highest_high = high.rolling(length, min_periods=min_periods).max()
+    midprice = 0.5 * (lowest_low + highest_high)
 
     # Offset
     if offset != 0:

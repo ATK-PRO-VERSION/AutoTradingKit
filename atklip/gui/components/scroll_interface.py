@@ -64,9 +64,6 @@ class ScrollInterface(SmoothScrollArea):
         self.vBoxLayout.insertWidget(index,widget, stretch=stretch, alignment=alignment)
         return widget
     
-    def find_Child(self, type: type, name: str = ..., options: Qt.FindChildOption = ...) -> object:
-        return self.vBoxLayout.findChild(type, name, options)
-    
     def removeWidget(self, widget:QWidget):
         self.vBoxLayout.removeWidget(widget)
         widget.deleteLater()

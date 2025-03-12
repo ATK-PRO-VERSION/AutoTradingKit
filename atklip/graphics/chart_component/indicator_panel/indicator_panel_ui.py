@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'indicator_panelSdWoJW.ui'
+## Form generated from reading UI file 'indicator_panel.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.4.3
+## Created by: Qt User Interface Compiler version 6.8.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -18,7 +18,6 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QApplication, QFrame, QHBoxLayout, QLabel,
     QPushButton, QSizePolicy, QWidget)
 
-
 class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
@@ -26,83 +25,7 @@ class Ui_Form(object):
         Form.resize(303, 28)
         Form.setMinimumSize(QSize(0, 28))
         Form.setMaximumSize(QSize(16777215, 28))
-        Form.setStyleSheet(u"QWidget:hover {\n"
-"	border: solid;\n"
-"    border-width: 0.5px;\n"
-"    border-radius: 5px;\n"
-"    border-color: #474747;\n"
-"}\n"
-"\n"
-"QWidget:!hover {\n"
-"	border: solid;\n"
-"    border-width: 0.5px;\n"
-"    border-radius: 5px;\n"
-"    border-color: transparent;\n"
-"}\n"
-"\n"
-"\n"
-"QPushButton {\n"
-"    background-color:transparent;\n"
-"	border: solid;\n"
-"    border-width: 0px;\n"
-"    border-radius: 5px;\n"
-"    border-color: transparent;\n"
-"\n"
-"}\n"
-"\n"
-"QPushButton:hover {\n"
-"    /* \"bg_two\" */\n"
-"   background-color: #444551;\n"
-"	border: solid;\n"
-"    border-width: 0px;\n"
-"    border-radius: 5px;\n"
-"    border-color: transparent;\n"
-"}\n"
-"\n"
-"QPushButton:!hover {\n"
-"    /* \"bg_two\" */\n"
-"   background-color: transparent;\n"
-"	border: solid;\n"
-"    border-width: 0px;\n"
-"    border-radius: 5px;\n"
-"    border-color: transparent;\n"
-"}\n"
-"\n"
-"QPushButton:pressed {\n"
-"    background-color : #141622;\n"
-"	border: solid;\n"
-"    border-width: 0px;\n"
-"    border-radius: 5px;\n"
-"    b"
-                        "order-color: transparent;\n"
-"}\n"
-"\n"
-"QLabel {\n"
-"    background-color:transparent;\n"
-"	color: white;\n"
-"    font: 12px;\n"
-"    font-family: Time Newroman;\n"
-"	border: none;\n"
-"}\n"
-"\n"
-"\n"
-"QLabel:hover{\n"
-"    background-color:transparent;\n"
-"	color: white;\n"
-"    font: 12px;\n"
-"    font-family: Time Newroman;\n"
-"	border: none;\n"
-"}\n"
-"\n"
-"QLabel:!hover{\n"
-"    background-color:transparent;\n"
-"	color: white;\n"
-"    font: 12px;\n"
-"    font-family: Time Newroman;\n"
-"	border: none;\n"
-"}\n"
-"\n"
-"")
+        Form.setStyleSheet(u"")
         self.horizontalLayout = QHBoxLayout(Form)
         self.horizontalLayout.setSpacing(0)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
@@ -112,15 +35,15 @@ class Ui_Form(object):
         self.frame.setMinimumSize(QSize(0, 28))
         self.frame.setMaximumSize(QSize(16777215, 28))
         self.frame.setStyleSheet(u"")
-        self.frame.setFrameShape(QFrame.NoFrame)
-        self.frame.setFrameShadow(QFrame.Plain)
+        self.frame.setFrameShape(QFrame.Shape.NoFrame)
+        self.frame.setFrameShadow(QFrame.Shadow.Plain)
         self.horizontalLayout_2 = QHBoxLayout(self.frame)
         self.horizontalLayout_2.setSpacing(5)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.horizontalLayout_2.setContentsMargins(10, 0, 2, 0)
         self.name = QLabel(self.frame)
         self.name.setObjectName(u"name")
-        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.name.sizePolicy().hasHeightForWidth())
@@ -134,10 +57,9 @@ class Ui_Form(object):
         font.setItalic(False)
         font.setStyleStrategy(QFont.PreferAntialias)
         self.name.setFont(font)
-        self.name.setStyleSheet(u"color: #eaeaea;\n"
-"font: 10pt \"Segoe UI\";")
+        self.name.setStyleSheet(u"")
         self.name.setScaledContents(True)
-        self.name.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
+        self.name.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.name.setWordWrap(False)
         self.name.setMargin(0)
 
@@ -151,7 +73,7 @@ class Ui_Form(object):
         self.showhide.setMaximumSize(QSize(25, 25))
         self.showhide.setStyleSheet(u"")
         icon = QIcon()
-        icon.addFile(u":/qfluentwidgets/images/icons/eye_drawing.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u":/qfluentwidgets/images/icons/eye_drawing.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.showhide.setIcon(icon)
         self.showhide.setFlat(True)
 
@@ -165,7 +87,7 @@ class Ui_Form(object):
         self.btn_indicator_setting.setMaximumSize(QSize(25, 25))
         self.btn_indicator_setting.setStyleSheet(u"")
         icon1 = QIcon()
-        icon1.addFile(u":/qfluentwidgets/images/icons/Setting_white.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon1.addFile(u":/qfluentwidgets/images/icons/Setting_white.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.btn_indicator_setting.setIcon(icon1)
         self.btn_indicator_setting.setIconSize(QSize(16, 16))
         self.btn_indicator_setting.setFlat(True)
@@ -180,7 +102,7 @@ class Ui_Form(object):
         self.btn_indicator_close.setMaximumSize(QSize(25, 25))
         self.btn_indicator_close.setStyleSheet(u"")
         icon2 = QIcon()
-        icon2.addFile(u":/qfluentwidgets/images/icons/Close_white.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon2.addFile(u":/qfluentwidgets/images/icons/Close_white.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.btn_indicator_close.setIcon(icon2)
         self.btn_indicator_close.setIconSize(QSize(12, 12))
         self.btn_indicator_close.setAutoDefault(False)
@@ -196,7 +118,7 @@ class Ui_Form(object):
         self.btn_more_option.setMaximumSize(QSize(25, 25))
         self.btn_more_option.setStyleSheet(u"")
         icon3 = QIcon()
-        icon3.addFile(u":/qfluentwidgets/images/icons/More_white.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon3.addFile(u":/qfluentwidgets/images/icons/More_white.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.btn_more_option.setIcon(icon3)
         self.btn_more_option.setFlat(True)
 
