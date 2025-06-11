@@ -1,4 +1,4 @@
-PySide6
+PySide6 == 6.9.0
 PySide6-stubs
 PySideSix-Frameless-Window
 darkdetect
